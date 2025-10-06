@@ -1,16 +1,16 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/no-auth-provider";
 import { useState } from "react";
 import { User, Mail, Phone, Building, Calendar, Edit3, Save, X } from "lucide-react";
 import Image from "next/image";
 
 export default function ProfilePage() {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: session?.user?.name || "",
-    email: session?.user?.email || "",
+    name: user?.name || "",
+    email: user?.email || "",
     phone: "",
     department: "",
     role: "user"

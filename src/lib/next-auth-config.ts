@@ -1,14 +1,14 @@
-import NextAuth from "next-auth"
-import GoogleProvider from "next-auth/providers/google"
-import CredentialsProvider from "next-auth/providers/credentials"
-import { prisma } from "@/lib/prisma"
-import bcrypt from "bcryptjs"
+import { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
     CredentialsProvider({
       name: "credentials",
@@ -86,15 +86,15 @@ const handler = NextAuth({
     },
     async jwt({ token, user, account }) {
       if (user) {
-        token.role = user.role
-        token.id = user.id
+        token.role = (user as any).role
+        token.id = (user as any).id
       }
       return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
+      if (token && session.user) {
+        (session.user as any).id = token.id as string
+        (session.user as any).role = token.role as string
       }
       return session
     },
@@ -104,6 +104,35 @@ const handler = NextAuth({
     error: "/en/auth/error",
   },
   debug: process.env.NODE_ENV === "development",
-})
-
-export { handler as GET, handler as POST }
+  // Add explicit URL configuration
+  url: process.env.NEXTAUTH_URL || "http://localhost:3002",
+  // Add trustHost for development
+  trustHost: true,
+  // Add event logging for debugging
+  events: {
+    async signIn(message: any) {
+      console.log("NextAuth signIn event:", message);
+    },
+    async signOut(message: any) {
+      console.log("NextAuth signOut event:", message);
+    },
+    async session(message: any) {
+      console.log("NextAuth session event:", message);
+    },
+  },
+  // Add custom fetch configuration
+  adapter: undefined, // Use JWT strategy
+  secret: process.env.NEXTAUTH_SECRET,
+  // Add custom fetch function to handle errors
+  logger: {
+    error(code, metadata) {
+      console.error("NextAuth error:", code, metadata);
+    },
+    warn(code) {
+      console.warn("NextAuth warning:", code);
+    },
+    debug(code, metadata) {
+      console.log("NextAuth debug:", code, metadata);
+    },
+  },
+};

@@ -1,21 +1,19 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { useSession, signOut } from "next-auth/react";
 
 interface User {
   id: string;
   email: string;
   name?: string;
-  role?: string;
+  role: string;
   avatar?: string;
-  organizationId?: string;
 }
 
 interface Organization {
   id: string;
   name: string;
-  plan: "free" | "pro" | "enterprise";
+  plan: string;
   maxTenders: number;
   maxUsers: number;
 }
@@ -31,39 +29,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
+export function NoAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (session?.user) {
-      setUser({
-        id: session.user.id || "",
-        email: session.user.email || "",
-        name: session.user.name || undefined,
-        role: session.user.role || "user",
-        avatar: session.user.image || undefined,
-        organizationId: "org_dev", // Default organization for now
-      });
-      
-      // Set default organization
-      setOrganization({
-        id: "org_dev",
-        name: "Syntara Tenders AI",
-        plan: "enterprise",
-        maxTenders: 1000,
-        maxUsers: 50,
-      });
-    } else {
-      setUser(null);
-      setOrganization(null);
-    }
-  }, [session]);
+    // Simulate a brief loading state
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const logout = async () => {
     try {
-      await signOut({ callbackUrl: "/en/auth/signin" });
       setUser(null);
       setOrganization(null);
     } catch (error) {
@@ -99,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{
       user,
       organization,
-      isLoading: status === "loading",
+      isLoading,
       logout,
       hasRole,
       hasPermission,

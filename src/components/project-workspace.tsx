@@ -91,22 +91,52 @@ export function ProjectWorkspace({
     };
   }, [tenderId]);
 
-  const fetchTenderData = async () => {
+  const fetchTenderData = async (retryCount = 0) => {
     if (!isRefreshing) {
       setIsLoading(true);
     }
+    
     try {
-      const response = await fetch(`/api/tenders/${tenderId}`);
+      console.log(`🔄 Fetching tender data for ${tenderId} (attempt ${retryCount + 1})`);
+      
+      const response = await fetch(`/api/tenders/${tenderId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-cache'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       if (data.tender) {
         setTender(data.tender);
         console.log("✅ Tender data refreshed successfully");
+      } else {
+        console.warn("⚠️ No tender data received");
       }
     } catch (error) {
-      console.error("Error fetching tender data:", error);
+      console.error("❌ Error fetching tender data:", error);
+      
+      // Retry logic - retry up to 3 times with exponential backoff
+      if (retryCount < 3) {
+        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+        console.log(`🔄 Retrying in ${delay}ms...`);
+        setTimeout(() => {
+          fetchTenderData(retryCount + 1);
+        }, delay);
+        return; // Don't set loading to false yet
+      } else {
+        console.error("❌ Max retries reached. Giving up.");
+      }
     } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
+      if (retryCount === 0 || retryCount >= 3) {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     }
   };
 

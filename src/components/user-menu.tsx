@@ -1,16 +1,16 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useAuth } from "@/components/no-auth-provider";
 import { User, LogOut, Settings, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function UserMenu() {
-  const { data: session, status } = useSession();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
 
-  if (status === "loading") {
+  if (isLoading) {
     return (
       <div className="flex items-center space-x-2">
         <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" />
@@ -19,7 +19,7 @@ export function UserMenu() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!user) {
     return (
       <button
         onClick={() => router.push("/auth/signin")}
@@ -29,8 +29,6 @@ export function UserMenu() {
       </button>
     );
   }
-
-  const user = session?.user;
   const initials = user?.name
     ?.split(" ")
     .map((n) => n[0])

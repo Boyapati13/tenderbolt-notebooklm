@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
-import { NextAuthProvider } from "@/components/next-auth-provider";
+import { NoAuthProvider } from "@/components/no-auth-provider";
 // Temporarily disabled next-intl
 // import { NextIntlClientProvider } from 'next-intl';
 // import { getMessages } from 'next-intl/server';
@@ -95,21 +95,19 @@ export default async function LocaleLayout({
       </head>
       <body className={`${inter.variable} antialiased min-h-screen bg-background text-foreground`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <NextAuthProvider>
-            <AuthProvider>
-              <div className="min-h-screen w-full flex">
-                <AppSidebar />
-                <div className="flex-1 flex flex-col min-h-screen">
-                  <AppHeader />
-                  <main className="flex-1 bg-background">
-                    <div className="animate-fade-in">
-                      {children}
-                    </div>
-                  </main>
-                </div>
+          <NoAuthProvider>
+            <div className="min-h-screen w-full flex">
+              <AppSidebar />
+              <div className="flex-1 flex flex-col min-h-screen">
+                <AppHeader />
+                <main className="flex-1 bg-background">
+                  <div className="animate-fade-in">
+                    {children}
+                  </div>
+                </main>
               </div>
-            </AuthProvider>
-          </NextAuthProvider>
+            </div>
+          </NoAuthProvider>
         </ThemeProvider>
       </body>
     </html>

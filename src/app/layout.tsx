@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/components/auth-provider";
-import { NextAuthProvider } from "@/components/next-auth-provider";
+import { NoAuthProvider } from "@/components/no-auth-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -75,11 +74,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} antialiased min-h-screen bg-background text-foreground`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <NextAuthProvider>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
-          </NextAuthProvider>
+          <NoAuthProvider>
+            {children}
+          </NoAuthProvider>
         </ThemeProvider>
       </body>
     </html>

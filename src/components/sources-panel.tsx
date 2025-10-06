@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, Search, FileText, Trash2, Brain, Folder, FolderOpen, ChevronDown, ChevronRight, FileCheck, Building2, File, Link, Sparkles, Zap } from "lucide-react";
 import { DiscoverySection } from "./discovery-section";
 import NotebookLMAutoPanel from "./notebooklm-auto-panel";
+import { fetchAPIData } from "@/lib/fetch-utils";
 
 type Document = {
   id: string;
@@ -40,13 +41,16 @@ export function SourcesPanel({ tenderId, onDocumentUploaded }: { tenderId?: stri
 
   const fetchDocuments = async () => {
     try {
-      const url = tenderId ? `/api/documents?tenderId=${tenderId}` : "/api/documents";
-      const response = await fetch(url);
-      const data = await response.json();
+      const endpoint = tenderId ? `api/documents?tenderId=${tenderId}` : "api/documents";
+      console.log(`🔄 Fetching documents from: ${endpoint}`);
+      
+      const data = await fetchAPIData<{ documents: Document[] }>(endpoint);
       setDocuments(data.documents ?? []);
       console.log(`📚 Loaded ${data.documents?.length || 0} documents`);
     } catch (error) {
-      console.error("Failed to fetch documents:", error);
+      console.error("❌ Failed to fetch documents:", error);
+      // Set empty documents array as fallback
+      setDocuments([]);
     }
   };
 

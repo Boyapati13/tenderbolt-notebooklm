@@ -1,0 +1,21 @@
+
+# Vercel Environment Variables Template
+# Copy these to your Vercel project settings
+
+# NextAuth Configuration
+NEXTAUTH_URL=https://your-project.vercel.app
+NEXTAUTH_SECRET=your-secret-key-here
+
+# Google OAuth (if using)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Database (if using)
+DATABASE_URL=your-database-connection-string
+
+# Application URL
+NEXT_PUBLIC_APP_URL=https://your-project.vercel.app
+
+# Optional: Additional environment variables
+# NODE_ENV=production
+# NEXT_PUBLIC_ANALYTICS_ID=your-analytics-id

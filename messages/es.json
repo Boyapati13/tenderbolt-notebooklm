@@ -1,0 +1,97 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "refresh": "Actualizar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "close": "Cerrar"
+  },
+  "navigation": {
+    "dashboard": "Panel de Control",
+    "projects": "Proyectos",
+    "analytics": "Analíticas",
+    "management": "Gestión",
+    "aiAssistant": "Asistente IA",
+    "integrations": "Integraciones",
+    "internetSearch": "Búsqueda en Internet",
+    "supportingDocuments": "Documentos de Apoyo",
+    "companyDocuments": "Documentos de la Empresa",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "help": "Ayuda"
+  },
+  "auth": {
+    "signIn": "Iniciar Sesión",
+    "signOut": "Cerrar Sesión",
+    "signUp": "Registrarse",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "rememberMe": "Recordarme",
+    "signInWithGoogle": "Iniciar sesión con Google",
+    "signInWithEmail": "Iniciar sesión con Email",
+    "welcomeBack": "Bienvenido de vuelta",
+    "signInToAccount": "Inicia sesión en tu cuenta de Syntara Tenders AI"
+  },
+  "dashboard": {
+    "title": "Panel de Control",
+    "welcome": "Bienvenido a Syntara Tenders AI",
+    "overview": "Resumen",
+    "recentActivity": "Actividad Reciente",
+    "quickActions": "Acciones Rápidas",
+    "statistics": "Estadísticas"
+  },
+  "tenders": {
+    "title": "Licitaciones",
+    "newTender": "Nueva Licitación",
+    "tenderTitle": "Título de la Licitación",
+    "status": "Estado",
+    "winProbability": "Probabilidad de Ganar",
+    "dueDate": "Fecha de Vencimiento",
+    "noDueDate": "Sin fecha de vencimiento",
+    "add": "Agregar",
+    "editTender": "Editar Licitación",
+    "deleteTender": "Eliminar Licitación"
+  },
+  "documents": {
+    "title": "Documentos",
+    "upload": "Subir",
+    "download": "Descargar",
+    "view": "Ver",
+    "delete": "Eliminar",
+    "fileName": "Nombre del Archivo",
+    "fileSize": "Tamaño del Archivo",
+    "uploadDate": "Fecha de Subida",
+    "category": "Categoría",
+    "type": "Tipo"
+  },
+  "ai": {
+    "assistant": "Asistente IA",
+    "askQuestion": "Haz una pregunta...",
+    "generating": "Generando respuesta...",
+    "error": "Error al generar respuesta",
+    "retry": "Reintentar"
+  },
+  "errors": {
+    "pageNotFound": "Página No Encontrada",
+    "internalServerError": "Error Interno del Servidor",
+    "unauthorized": "No Autorizado",
+    "forbidden": "Prohibido",
+    "badRequest": "Solicitud Incorrecta",
+    "networkError": "Error de Red",
+    "tryAgain": "Por favor, inténtalo de nuevo",
+    "contactSupport": "Contactar Soporte"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "refresh": "Actualiser",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "close": "Fermer"
+  },
+  "navigation": {
+    "dashboard": "Tableau de Bord",
+    "projects": "Projets",
+    "analytics": "Analytiques",
+    "management": "Gestion",
+    "aiAssistant": "Assistant IA",
+    "integrations": "Intégrations",
+    "internetSearch": "Recherche Internet",
+    "supportingDocuments": "Documents de Soutien",
+    "companyDocuments": "Documents de l'Entreprise",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "help": "Aide"
+  },
+  "auth": {
+    "signIn": "Se Connecter",
+    "signOut": "Se Déconnecter",
+    "signUp": "S'Inscrire",
+    "email": "Email",
+    "password": "Mot de Passe",
+    "forgotPassword": "Mot de passe oublié?",
+    "rememberMe": "Se souvenir de moi",
+    "signInWithGoogle": "Se connecter avec Google",
+    "signInWithEmail": "Se connecter avec Email",
+    "welcomeBack": "Bon retour",
+    "signInToAccount": "Connectez-vous à votre compte Syntara Tenders AI"
+  },
+  "dashboard": {
+    "title": "Tableau de Bord",
+    "welcome": "Bienvenue dans Syntara Tenders AI",
+    "overview": "Aperçu",
+    "recentActivity": "Activité Récente",
+    "quickActions": "Actions Rapides",
+    "statistics": "Statistiques"
+  },
+  "tenders": {
+    "title": "Appels d'Offres",
+    "newTender": "Nouvel Appel d'Offre",
+    "tenderTitle": "Titre de l'Appel d'Offre",
+    "status": "Statut",
+    "winProbability": "Probabilité de Gain",
+    "dueDate": "Date d'Échéance",
+    "noDueDate": "Aucune date d'échéance",
+    "add": "Ajouter",
+    "editTender": "Modifier l'Appel d'Offre",
+    "deleteTender": "Supprimer l'Appel d'Offre"
+  },
+  "documents": {
+    "title": "Documents",
+    "upload": "Télécharger",
+    "download": "Télécharger",
+    "view": "Voir",
+    "delete": "Supprimer",
+    "fileName": "Nom du Fichier",
+    "fileSize": "Taille du Fichier",
+    "uploadDate": "Date de Téléchargement",
+    "category": "Catégorie",
+    "type": "Type"
+  },
+  "ai": {
+    "assistant": "Assistant IA",
+    "askQuestion": "Posez une question...",
+    "generating": "Génération de la réponse...",
+    "error": "Erreur lors de la génération de la réponse",
+    "retry": "Réessayer"
+  },
+  "errors": {
+    "pageNotFound": "Page Non Trouvée",
+    "internalServerError": "Erreur Interne du Serveur",
+    "unauthorized": "Non Autorisé",
+    "forbidden": "Interdit",
+    "badRequest": "Mauvaise Demande",
+    "networkError": "Erreur de Réseau",
+    "tryAgain": "Veuillez réessayer",
+    "contactSupport": "Contacter le Support"
+  }
+}

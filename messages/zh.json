@@ -1,0 +1,97 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "refresh": "刷新",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "submit": "提交",
+    "close": "关闭"
+  },
+  "navigation": {
+    "dashboard": "仪表板",
+    "projects": "项目",
+    "analytics": "分析",
+    "management": "管理",
+    "aiAssistant": "AI助手",
+    "integrations": "集成",
+    "internetSearch": "互联网搜索",
+    "supportingDocuments": "支持文档",
+    "companyDocuments": "公司文档",
+    "settings": "设置",
+    "profile": "个人资料",
+    "help": "帮助"
+  },
+  "auth": {
+    "signIn": "登录",
+    "signOut": "登出",
+    "signUp": "注册",
+    "email": "电子邮件",
+    "password": "密码",
+    "forgotPassword": "忘记密码？",
+    "rememberMe": "记住我",
+    "signInWithGoogle": "使用Google登录",
+    "signInWithEmail": "使用电子邮件登录",
+    "welcomeBack": "欢迎回来",
+    "signInToAccount": "登录您的Syntara Tenders AI账户"
+  },
+  "dashboard": {
+    "title": "仪表板",
+    "welcome": "欢迎使用Syntara Tenders AI",
+    "overview": "概览",
+    "recentActivity": "最近活动",
+    "quickActions": "快速操作",
+    "statistics": "统计"
+  },
+  "tenders": {
+    "title": "招标",
+    "newTender": "新招标",
+    "tenderTitle": "招标标题",
+    "status": "状态",
+    "winProbability": "中标概率",
+    "dueDate": "截止日期",
+    "noDueDate": "无截止日期",
+    "add": "添加",
+    "editTender": "编辑招标",
+    "deleteTender": "删除招标"
+  },
+  "documents": {
+    "title": "文档",
+    "upload": "上传",
+    "download": "下载",
+    "view": "查看",
+    "delete": "删除",
+    "fileName": "文件名",
+    "fileSize": "文件大小",
+    "uploadDate": "上传日期",
+    "category": "类别",
+    "type": "类型"
+  },
+  "ai": {
+    "assistant": "AI助手",
+    "askQuestion": "提问...",
+    "generating": "正在生成回答...",
+    "error": "生成回答时出错",
+    "retry": "重试"
+  },
+  "errors": {
+    "pageNotFound": "页面未找到",
+    "internalServerError": "内部服务器错误",
+    "unauthorized": "未授权",
+    "forbidden": "禁止访问",
+    "badRequest": "请求错误",
+    "networkError": "网络错误",
+    "tryAgain": "请重试",
+    "contactSupport": "联系支持"
+  }
+}

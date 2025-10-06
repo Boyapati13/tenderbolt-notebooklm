@@ -1,0 +1,97 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "refresh": "تحديث",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "submit": "إرسال",
+    "close": "إغلاق"
+  },
+  "navigation": {
+    "dashboard": "لوحة التحكم",
+    "projects": "المشاريع",
+    "analytics": "التحليلات",
+    "management": "الإدارة",
+    "aiAssistant": "مساعد الذكاء الاصطناعي",
+    "integrations": "التكاملات",
+    "internetSearch": "البحث على الإنترنت",
+    "supportingDocuments": "الوثائق الداعمة",
+    "companyDocuments": "وثائق الشركة",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "help": "المساعدة"
+  },
+  "auth": {
+    "signIn": "تسجيل الدخول",
+    "signOut": "تسجيل الخروج",
+    "signUp": "إنشاء حساب",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "rememberMe": "تذكرني",
+    "signInWithGoogle": "تسجيل الدخول باستخدام Google",
+    "signInWithEmail": "تسجيل الدخول باستخدام البريد الإلكتروني",
+    "welcomeBack": "مرحباً بعودتك",
+    "signInToAccount": "سجل الدخول إلى حساب Syntara Tenders AI الخاص بك"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "welcome": "مرحباً بك في Syntara Tenders AI",
+    "overview": "نظرة عامة",
+    "recentActivity": "النشاط الأخير",
+    "quickActions": "الإجراءات السريعة",
+    "statistics": "الإحصائيات"
+  },
+  "tenders": {
+    "title": "المناقصات",
+    "newTender": "مناقصة جديدة",
+    "tenderTitle": "عنوان المناقصة",
+    "status": "الحالة",
+    "winProbability": "احتمالية الفوز",
+    "dueDate": "تاريخ الاستحقاق",
+    "noDueDate": "لا يوجد تاريخ استحقاق",
+    "add": "إضافة",
+    "editTender": "تعديل المناقصة",
+    "deleteTender": "حذف المناقصة"
+  },
+  "documents": {
+    "title": "الوثائق",
+    "upload": "رفع",
+    "download": "تحميل",
+    "view": "عرض",
+    "delete": "حذف",
+    "fileName": "اسم الملف",
+    "fileSize": "حجم الملف",
+    "uploadDate": "تاريخ الرفع",
+    "category": "الفئة",
+    "type": "النوع"
+  },
+  "ai": {
+    "assistant": "مساعد الذكاء الاصطناعي",
+    "askQuestion": "اطرح سؤالاً...",
+    "generating": "جاري توليد الإجابة...",
+    "error": "خطأ في توليد الإجابة",
+    "retry": "إعادة المحاولة"
+  },
+  "errors": {
+    "pageNotFound": "الصفحة غير موجودة",
+    "internalServerError": "خطأ داخلي في الخادم",
+    "unauthorized": "غير مخول",
+    "forbidden": "محظور",
+    "badRequest": "طلب غير صحيح",
+    "networkError": "خطأ في الشبكة",
+    "tryAgain": "يرجى المحاولة مرة أخرى",
+    "contactSupport": "اتصل بالدعم"
+  }
+}

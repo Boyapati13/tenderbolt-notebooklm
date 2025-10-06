@@ -1,0 +1,97 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "refresh": "Refresh",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "close": "Close"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "analytics": "Analytics",
+    "management": "Management",
+    "aiAssistant": "AI Assistant",
+    "integrations": "Integrations",
+    "internetSearch": "Internet Search",
+    "supportingDocuments": "Supporting Documents",
+    "companyDocuments": "Company Documents",
+    "settings": "Settings",
+    "profile": "Profile",
+    "help": "Help"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember Me",
+    "signInWithGoogle": "Sign in with Google",
+    "signInWithEmail": "Sign in with Email",
+    "welcomeBack": "Welcome Back",
+    "signInToAccount": "Sign in to your Syntara Tenders AI account"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to Syntara Tenders AI",
+    "overview": "Overview",
+    "recentActivity": "Recent Activity",
+    "quickActions": "Quick Actions",
+    "statistics": "Statistics"
+  },
+  "tenders": {
+    "title": "Tenders",
+    "newTender": "New Tender",
+    "tenderTitle": "Tender Title",
+    "status": "Status",
+    "winProbability": "Win Probability",
+    "dueDate": "Due Date",
+    "noDueDate": "No due date",
+    "add": "Add",
+    "editTender": "Edit Tender",
+    "deleteTender": "Delete Tender"
+  },
+  "documents": {
+    "title": "Documents",
+    "upload": "Upload",
+    "download": "Download",
+    "view": "View",
+    "delete": "Delete",
+    "fileName": "File Name",
+    "fileSize": "File Size",
+    "uploadDate": "Upload Date",
+    "category": "Category",
+    "type": "Type"
+  },
+  "ai": {
+    "assistant": "AI Assistant",
+    "askQuestion": "Ask a question...",
+    "generating": "Generating response...",
+    "error": "Error generating response",
+    "retry": "Retry"
+  },
+  "errors": {
+    "pageNotFound": "Page Not Found",
+    "internalServerError": "Internal Server Error",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "badRequest": "Bad Request",
+    "networkError": "Network Error",
+    "tryAgain": "Please try again",
+    "contactSupport": "Contact Support"
+  }
+}

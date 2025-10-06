@@ -1,0 +1,97 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "create": "생성",
+    "search": "검색",
+    "filter": "필터",
+    "sort": "정렬",
+    "refresh": "새로고침",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "submit": "제출",
+    "close": "닫기"
+  },
+  "navigation": {
+    "dashboard": "대시보드",
+    "projects": "프로젝트",
+    "analytics": "분석",
+    "management": "관리",
+    "aiAssistant": "AI 어시스턴트",
+    "integrations": "통합",
+    "internetSearch": "인터넷 검색",
+    "supportingDocuments": "지원 문서",
+    "companyDocuments": "회사 문서",
+    "settings": "설정",
+    "profile": "프로필",
+    "help": "도움말"
+  },
+  "auth": {
+    "signIn": "로그인",
+    "signOut": "로그아웃",
+    "signUp": "회원가입",
+    "email": "이메일",
+    "password": "비밀번호",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "rememberMe": "로그인 상태 유지",
+    "signInWithGoogle": "Google로 로그인",
+    "signInWithEmail": "이메일로 로그인",
+    "welcomeBack": "다시 오신 것을 환영합니다",
+    "signInToAccount": "Syntara Tenders AI 계정에 로그인"
+  },
+  "dashboard": {
+    "title": "대시보드",
+    "welcome": "Syntara Tenders AI에 오신 것을 환영합니다",
+    "overview": "개요",
+    "recentActivity": "최근 활동",
+    "quickActions": "빠른 작업",
+    "statistics": "통계"
+  },
+  "tenders": {
+    "title": "입찰",
+    "newTender": "새 입찰",
+    "tenderTitle": "입찰 제목",
+    "status": "상태",
+    "winProbability": "수주 확률",
+    "dueDate": "마감일",
+    "noDueDate": "마감일 없음",
+    "add": "추가",
+    "editTender": "입찰 편집",
+    "deleteTender": "입찰 삭제"
+  },
+  "documents": {
+    "title": "문서",
+    "upload": "업로드",
+    "download": "다운로드",
+    "view": "보기",
+    "delete": "삭제",
+    "fileName": "파일명",
+    "fileSize": "파일 크기",
+    "uploadDate": "업로드 날짜",
+    "category": "카테고리",
+    "type": "유형"
+  },
+  "ai": {
+    "assistant": "AI 어시스턴트",
+    "askQuestion": "질문하세요...",
+    "generating": "답변 생성 중...",
+    "error": "답변 생성 오류",
+    "retry": "다시 시도"
+  },
+  "errors": {
+    "pageNotFound": "페이지를 찾을 수 없습니다",
+    "internalServerError": "내부 서버 오류",
+    "unauthorized": "인증되지 않음",
+    "forbidden": "접근 금지",
+    "badRequest": "잘못된 요청",
+    "networkError": "네트워크 오류",
+    "tryAgain": "다시 시도해 주세요",
+    "contactSupport": "지원팀에 문의"
+  }
+}

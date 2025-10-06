@@ -1,0 +1,97 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "refresh": "Aktualisieren",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Vorherige",
+    "submit": "Absenden",
+    "close": "Schließen"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "projects": "Projekte",
+    "analytics": "Analytik",
+    "management": "Verwaltung",
+    "aiAssistant": "KI-Assistent",
+    "integrations": "Integrationen",
+    "internetSearch": "Internet-Suche",
+    "supportingDocuments": "Unterstützende Dokumente",
+    "companyDocuments": "Unternehmensdokumente",
+    "settings": "Einstellungen",
+    "profile": "Profil",
+    "help": "Hilfe"
+  },
+  "auth": {
+    "signIn": "Anmelden",
+    "signOut": "Abmelden",
+    "signUp": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "forgotPassword": "Passwort vergessen?",
+    "rememberMe": "Angemeldet bleiben",
+    "signInWithGoogle": "Mit Google anmelden",
+    "signInWithEmail": "Mit E-Mail anmelden",
+    "welcomeBack": "Willkommen zurück",
+    "signInToAccount": "Melden Sie sich in Ihrem Syntara Tenders AI-Konto an"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Willkommen bei Syntara Tenders AI",
+    "overview": "Übersicht",
+    "recentActivity": "Letzte Aktivität",
+    "quickActions": "Schnellaktionen",
+    "statistics": "Statistiken"
+  },
+  "tenders": {
+    "title": "Ausschreibungen",
+    "newTender": "Neue Ausschreibung",
+    "tenderTitle": "Ausschreibungstitel",
+    "status": "Status",
+    "winProbability": "Gewinnwahrscheinlichkeit",
+    "dueDate": "Fälligkeitsdatum",
+    "noDueDate": "Kein Fälligkeitsdatum",
+    "add": "Hinzufügen",
+    "editTender": "Ausschreibung bearbeiten",
+    "deleteTender": "Ausschreibung löschen"
+  },
+  "documents": {
+    "title": "Dokumente",
+    "upload": "Hochladen",
+    "download": "Herunterladen",
+    "view": "Anzeigen",
+    "delete": "Löschen",
+    "fileName": "Dateiname",
+    "fileSize": "Dateigröße",
+    "uploadDate": "Upload-Datum",
+    "category": "Kategorie",
+    "type": "Typ"
+  },
+  "ai": {
+    "assistant": "KI-Assistent",
+    "askQuestion": "Stellen Sie eine Frage...",
+    "generating": "Antwort wird generiert...",
+    "error": "Fehler beim Generieren der Antwort",
+    "retry": "Wiederholen"
+  },
+  "errors": {
+    "pageNotFound": "Seite Nicht Gefunden",
+    "internalServerError": "Interner Serverfehler",
+    "unauthorized": "Nicht Autorisiert",
+    "forbidden": "Verboten",
+    "badRequest": "Ungültige Anfrage",
+    "networkError": "Netzwerkfehler",
+    "tryAgain": "Bitte versuchen Sie es erneut",
+    "contactSupport": "Support Kontaktieren"
+  }
+}

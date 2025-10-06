@@ -1,0 +1,97 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "create": "作成",
+    "search": "検索",
+    "filter": "フィルター",
+    "sort": "並び替え",
+    "refresh": "更新",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "submit": "送信",
+    "close": "閉じる"
+  },
+  "navigation": {
+    "dashboard": "ダッシュボード",
+    "projects": "プロジェクト",
+    "analytics": "分析",
+    "management": "管理",
+    "aiAssistant": "AIアシスタント",
+    "integrations": "統合",
+    "internetSearch": "インターネット検索",
+    "supportingDocuments": "サポート文書",
+    "companyDocuments": "会社文書",
+    "settings": "設定",
+    "profile": "プロフィール",
+    "help": "ヘルプ"
+  },
+  "auth": {
+    "signIn": "サインイン",
+    "signOut": "サインアウト",
+    "signUp": "サインアップ",
+    "email": "メール",
+    "password": "パスワード",
+    "forgotPassword": "パスワードを忘れましたか？",
+    "rememberMe": "ログイン状態を保持",
+    "signInWithGoogle": "Googleでサインイン",
+    "signInWithEmail": "メールでサインイン",
+    "welcomeBack": "おかえりなさい",
+    "signInToAccount": "Syntara Tenders AIアカウントにサインイン"
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "welcome": "Syntara Tenders AIへようこそ",
+    "overview": "概要",
+    "recentActivity": "最近のアクティビティ",
+    "quickActions": "クイックアクション",
+    "statistics": "統計"
+  },
+  "tenders": {
+    "title": "入札",
+    "newTender": "新しい入札",
+    "tenderTitle": "入札タイトル",
+    "status": "ステータス",
+    "winProbability": "受注確率",
+    "dueDate": "締切日",
+    "noDueDate": "締切日なし",
+    "add": "追加",
+    "editTender": "入札を編集",
+    "deleteTender": "入札を削除"
+  },
+  "documents": {
+    "title": "文書",
+    "upload": "アップロード",
+    "download": "ダウンロード",
+    "view": "表示",
+    "delete": "削除",
+    "fileName": "ファイル名",
+    "fileSize": "ファイルサイズ",
+    "uploadDate": "アップロード日",
+    "category": "カテゴリ",
+    "type": "タイプ"
+  },
+  "ai": {
+    "assistant": "AIアシスタント",
+    "askQuestion": "質問してください...",
+    "generating": "回答を生成中...",
+    "error": "回答生成エラー",
+    "retry": "再試行"
+  },
+  "errors": {
+    "pageNotFound": "ページが見つかりません",
+    "internalServerError": "内部サーバーエラー",
+    "unauthorized": "認証されていません",
+    "forbidden": "アクセスが禁止されています",
+    "badRequest": "不正なリクエスト",
+    "networkError": "ネットワークエラー",
+    "tryAgain": "もう一度お試しください",
+    "contactSupport": "サポートに連絡"
+  }
+}

@@ -32,6 +32,32 @@ interface AudioScript {
     complexity: "beginner" | "intermediate" | "advanced";
     tone: "professional" | "casual" | "authoritative" | "conversational";
   };
+  audioFile?: {
+    id: string;
+    fileUrl: string;
+    duration: number;
+    fileSize: number;
+    voice: string;
+    format: string;
+  };
+}
+
+interface VoiceOption {
+  name: string;
+  languageCode: string;
+  ssmlGender: 'MALE' | 'FEMALE' | 'NEUTRAL';
+  description: string;
+}
+
+interface AudioGenerationOptions {
+  voice: string;
+  speed: number;
+  pitch: number;
+  volume: number;
+  format: 'mp3' | 'wav' | 'ogg';
+  twoHostMode: boolean;
+  host1Voice?: string;
+  host2Voice?: string;
 }
 
 export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOverviewProps) {
@@ -64,6 +90,24 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
   });
   const [textInput, setTextInput] = useState("");
   const [showTextInput, setShowTextInput] = useState(false);
+  const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
+  const [isInteractiveMode, setIsInteractiveMode] = useState(true);
+  
+  // Audio generation states
+  const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
+  const [audioGenerationOptions, setAudioGenerationOptions] = useState<AudioGenerationOptions>({
+    voice: 'en-US-Standard-A',
+    speed: 1.0,
+    pitch: 0.0,
+    volume: 0.0,
+    format: 'mp3',
+    twoHostMode: false,
+    host1Voice: 'en-US-Standard-A',
+    host2Voice: 'en-US-Standard-B'
+  });
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [generatedAudio, setGeneratedAudio] = useState<HTMLAudioElement | null>(null);
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
 
   const styles: Array<{ 
     value: NarrationStyle; 
@@ -234,15 +278,84 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
         showNotification('Speech recognition not supported in this browser. Please use Chrome or Edge.', "warning");
       }
       
-      // Initialize Speech Synthesis
+      // Initialize Speech Synthesis with better detection
       if ('speechSynthesis' in window) {
-        setSpeechSynthesis(window.speechSynthesis);
+        const synth = window.speechSynthesis;
+        console.log('✅ Speech synthesis detected:', !!synth);
+        console.log('✅ Speech synthesis voices available:', synth.getVoices().length);
+        setSpeechSynthesis(synth);
+        
+        // Test if speech synthesis actually works
+        const testUtterance = new SpeechSynthesisUtterance('Test');
+        testUtterance.volume = 0; // Silent test
+        testUtterance.onerror = (event) => {
+          console.warn('Speech synthesis test failed:', event.error);
+          if (event.error === 'not-allowed') {
+            showNotification('Speech synthesis blocked by browser. Please check permissions.', "warning");
+          }
+        };
+        testUtterance.onend = () => {
+          console.log('✅ Speech synthesis test passed');
+        };
+        synth.speak(testUtterance);
       } else {
         console.warn('Speech synthesis not supported in this browser');
-        showNotification('Speech synthesis not supported in this browser', "warning");
+        showNotification('Speech synthesis not supported in this browser. Please use Chrome, Edge, or Safari.', "warning");
       }
     }
   }, []);
+
+  const handleSpeechInput = async (speechText: string) => {
+    console.log('🎤 handleSpeechInput called with:', speechText);
+    if (!speechText.trim()) return;
+    
+    setIsProcessingSpeech(true);
+    
+    // Add user message to conversation history
+    const userMessage = { role: 'user' as const, text: speechText, timestamp: new Date() };
+    setConversationHistory(prev => [...prev, userMessage]);
+    
+    try {
+      console.log('🎤 Sending request to AI...');
+      // Send to AI for processing with tender context
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content: `You are an AI assistant helping with tender management. The user is asking questions about tender ID: ${tenderId || 'default'}. Provide helpful, accurate responses based on the tender information. Keep responses conversational and under 200 words.`
+            },
+            { role: "user", content: speechText }
+          ],
+          tenderId: tenderId || "default"
+        })
+      });
+      
+      const data = await response.json();
+      console.log('🎤 AI response received:', data);
+      const aiResponse = data.reply || "I didn't understand that. Could you please repeat?";
+      console.log('🎤 AI response text:', aiResponse);
+      
+      // Add AI response to conversation history
+      const aiMessage = { role: 'assistant' as const, text: aiResponse, timestamp: new Date() };
+      setConversationHistory(prev => [...prev, aiMessage]);
+      
+      // Speak the response
+      console.log('🎤 Calling speakText with AI response...');
+      speakText(aiResponse);
+      
+    } catch (error) {
+      console.error("Error processing speech input:", error);
+      const errorMessage = "Sorry, I encountered an error processing your request.";
+      const errorMsg = { role: 'assistant' as const, text: errorMessage, timestamp: new Date() };
+      setConversationHistory(prev => [...prev, errorMsg]);
+      speakText(errorMessage);
+    } finally {
+      setIsProcessingSpeech(false);
+    }
+  };
 
   const handleTextInput = async () => {
     if (!textInput.trim()) return;
@@ -296,74 +409,152 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
   };
 
   const speakText = (text: string) => {
-    if (speechSynthesis) {
-      setIsSpeaking(true);
+    console.log('🎤 speakText called with:', text);
+    console.log('🎤 speechSynthesis available:', !!speechSynthesis);
+    console.log('🎤 window.speechSynthesis available:', typeof window !== 'undefined' && 'speechSynthesis' in window);
+    
+    // Try to get speech synthesis from window if not available in state
+    const synth = speechSynthesis || (typeof window !== 'undefined' && window.speechSynthesis);
+    
+    if (synth) {
+      console.log('🎤 Using speech synthesis:', !!synth);
+      console.log('🎤 Available voices:', synth.getVoices().length);
       
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = voiceSettings.rate;
-      utterance.pitch = voiceSettings.pitch;
-      utterance.volume = voiceSettings.volume;
+      // Stop any current speech to prevent repetition
+      if (currentUtterance) {
+        console.log('🎤 Stopping current utterance...');
+        synth.cancel();
+        setCurrentUtterance(null);
+      }
       
-      utterance.onend = () => {
-        setIsSpeaking(false);
-      };
-      
-      utterance.onerror = (event) => {
-        // Handle "interrupted" errors as normal behavior when speech is stopped
-        if (event.error === 'interrupted') {
-          console.log('Speech synthesis interrupted - this is normal when stopping speech');
+      // Small delay to ensure previous speech is stopped
+      setTimeout(() => {
+        console.log('🎤 Starting speech synthesis...');
+        setIsSpeaking(true);
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = voiceSettings.rate;
+        utterance.pitch = voiceSettings.pitch;
+        utterance.volume = voiceSettings.volume;
+        
+        // Store current utterance for interruption handling
+        setCurrentUtterance(utterance);
+        
+        console.log('🎤 Voice settings:', { rate: voiceSettings.rate, pitch: voiceSettings.pitch, volume: voiceSettings.volume });
+        
+        utterance.onstart = () => {
+          console.log('🎤 Speech synthesis started');
+          showNotification('🔊 Speaking...', 'info');
+        };
+        
+        utterance.onend = () => {
+          console.log('🎤 Speech synthesis completed');
           setIsSpeaking(false);
-          return; // Don't log as error, don't show notification
-        }
+          setCurrentUtterance(null);
+          showNotification('✅ Finished speaking', 'success');
+        };
         
-        // Only log serious speech synthesis errors
-        console.error('Speech synthesis error:', event.error);
-        setIsSpeaking(false);
+        utterance.onerror = (event) => {
+          console.log('🎤 Speech synthesis event:', event.error);
+          
+          // Handle "interrupted" errors as normal behavior when speech is stopped
+          if (event.error === 'interrupted') {
+            console.log('🎤 Speech synthesis interrupted - this is normal when stopping speech');
+            setIsSpeaking(false);
+            setCurrentUtterance(null);
+            return; // Don't log as error, don't show notification
+          }
+          
+          setIsSpeaking(false);
+          setCurrentUtterance(null);
+          
+          // Show user-friendly error messages for serious errors
+          let errorMessage = "Speech synthesis error";
+          switch (event.error) {
+            case 'not-allowed':
+              errorMessage = "Speech synthesis not allowed. Please check browser permissions and try again.";
+              break;
+            case 'network':
+              errorMessage = "Network error during speech synthesis.";
+              break;
+            case 'synthesis-failed':
+              errorMessage = "Speech synthesis failed. Please try again.";
+              break;
+            case 'synthesis-unavailable':
+              errorMessage = "Speech synthesis not available in this browser.";
+              break;
+            case 'language-unavailable':
+              errorMessage = "Selected language not available for speech synthesis.";
+              break;
+            case 'voice-unavailable':
+              errorMessage = "Selected voice not available.";
+              break;
+            case 'text-too-long':
+              errorMessage = "Text too long for speech synthesis.";
+              break;
+            case 'invalid-argument':
+              errorMessage = "Invalid argument for speech synthesis.";
+              break;
+            default:
+              errorMessage = `Speech synthesis error: ${event.error}`;
+          }
+          
+          showNotification(errorMessage, "error");
+        };
         
-        // Show user-friendly error messages for serious errors
-        let errorMessage = "Speech synthesis error";
-        switch (event.error) {
-          case 'not-allowed':
-            errorMessage = "Speech synthesis not allowed. Please check browser permissions.";
-            break;
-          case 'network':
-            errorMessage = "Network error during speech synthesis.";
-            break;
-          case 'synthesis-failed':
-            errorMessage = "Speech synthesis failed. Please try again.";
-            break;
-          case 'synthesis-unavailable':
-            errorMessage = "Speech synthesis not available in this browser.";
-            break;
-          case 'language-unavailable':
-            errorMessage = "Selected language not available for speech synthesis.";
-            break;
-          case 'voice-unavailable':
-            errorMessage = "Selected voice not available.";
-            break;
-          case 'text-too-long':
-            errorMessage = "Text too long for speech synthesis.";
-            break;
-          case 'invalid-argument':
-            errorMessage = "Invalid argument for speech synthesis.";
-            break;
-          default:
-            errorMessage = `Speech synthesis error: ${event.error}`;
-        }
-        
-        showNotification(errorMessage, "error");
-      };
-      
-      speechSynthesis.speak(utterance);
+        console.log('🎤 Calling speechSynthesis.speak...');
+        synth.speak(utterance);
+      }, 100);
+    } else {
+      console.error('🎤 Speech synthesis not available');
+      showNotification('Speech synthesis not available in this browser. Please use Chrome, Edge, or Safari.', 'error');
     }
   };
 
   const stopSpeaking = () => {
-    if (speechSynthesis) {
+    const synth = speechSynthesis || (typeof window !== 'undefined' && window.speechSynthesis);
+    
+    if (synth) {
+      console.log('🎤 Stopping speech synthesis...');
       // Cancel speech synthesis - this will trigger "interrupted" error which is normal
-      speechSynthesis.cancel();
+      synth.cancel();
       setIsSpeaking(false);
+      setCurrentUtterance(null);
       showNotification("Audio stopped", "info");
+    }
+  };
+
+  const testSpeech = () => {
+    console.log('🎤 Testing speech synthesis...');
+    speakText("Hello! This is a test of the speech synthesis system. Can you hear me?");
+  };
+
+  const testBrowserSpeech = () => {
+    console.log('🎤 Testing browser speech synthesis directly...');
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance("Hello! This is a direct test of browser speech synthesis.");
+      utterance.volume = 1.0;
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      
+      utterance.onstart = () => {
+        console.log('🎤 Direct browser speech started');
+        showNotification('🔊 Direct browser speech started', 'info');
+      };
+      
+      utterance.onend = () => {
+        console.log('🎤 Direct browser speech completed');
+        showNotification('✅ Direct browser speech completed', 'success');
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('🎤 Direct browser speech error:', event.error);
+        showNotification(`Direct browser speech error: ${event.error}`, 'error');
+      };
+      
+      window.speechSynthesis.speak(utterance);
+    } else {
+      showNotification('Browser speech synthesis not available', 'error');
     }
   };
 
@@ -378,9 +569,15 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
       return;
     }
 
-    if (isSpeaking) {
+    if (isSpeaking && !isInteractiveMode) {
       showNotification("AI is speaking. Please wait...", "info");
       return;
+    }
+
+    // In interactive mode, stop current speech when user starts speaking
+    if (isSpeaking && isInteractiveMode) {
+      console.log('🎤 Interactive mode: Stopping AI speech for user input...');
+      stopSpeaking();
     }
 
     if (isProcessingSpeech) {
@@ -400,6 +597,48 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
           return;
         }
       }
+
+      // Set up speech recognition event handlers
+      speechRecognition.onstart = () => {
+        console.log('🎤 Speech recognition started');
+        setIsListening(true);
+        showNotification("🎤 Listening... Speak now!", "info");
+      };
+
+      speechRecognition.onresult = (event: SpeechRecognitionEvent) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0])
+          .map(result => result.transcript)
+          .join('');
+
+        console.log('🎤 Speech recognized:', transcript);
+        
+        // Stop speech synthesis when user starts speaking (interactive mode)
+        if (isInteractiveMode && isSpeaking) {
+          console.log('🎤 User started speaking, stopping AI speech...');
+          stopSpeaking();
+        }
+        
+        handleSpeechInput(transcript);
+      };
+
+      speechRecognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        console.error('🎤 Speech recognition error:', event.error);
+        setIsListening(false);
+        
+        if (event.error === 'not-allowed') {
+          showNotification("Microphone access denied. Please allow microphone access and try again.", "error");
+        } else if (event.error === 'no-speech') {
+          showNotification("No speech detected. Please try again.", "warning");
+        } else {
+          showNotification(`Speech recognition error: ${event.error}`, "error");
+        }
+      };
+
+      speechRecognition.onend = () => {
+        console.log('🎤 Speech recognition ended');
+        setIsListening(false);
+      };
 
       // Start speech recognition
       speechRecognition.start();
@@ -424,12 +663,16 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
 
   const handleGenerate = async () => {
     if (selectedStyle === "interactive") {
-      // For interactive mode, start with a greeting
-      const greeting = "Hello! I'm your AI assistant for this tender. I can help you understand the project requirements, deadlines, budget, and any other details. You can ask me questions like 'What is the deadline?' or 'What are the main requirements?' What would you like to know?";
-      const greetingMsg = { role: 'assistant' as const, text: greeting, timestamp: new Date() };
-      setConversationHistory([greetingMsg]);
-      speakText(greeting);
-      showNotification("Interactive mode started! Click 'Start Speaking' to begin conversation.", "success");
+      // For interactive mode, start with a greeting (only if no conversation history)
+      if (conversationHistory.length === 0) {
+        const greeting = "Hello! I'm your AI assistant for this tender. I can help you understand the project requirements, deadlines, budget, and any other details. You can ask me questions like 'What is the deadline?' or 'What are the main requirements?' What would you like to know?";
+        const greetingMsg = { role: 'assistant' as const, text: greeting, timestamp: new Date() };
+        setConversationHistory([greetingMsg]);
+        speakText(greeting);
+        showNotification("Interactive mode started! Click 'Start Speaking' to begin conversation.", "success");
+      } else {
+        showNotification("Interactive mode is already active. Click 'Start Speaking' to continue conversation.", "info");
+      }
       return;
     }
     setIsGenerating(true);
@@ -458,6 +701,89 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
       showNotification("Failed to generate audio script. Please try again.", "error");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  // Load available voices on component mount
+  useEffect(() => {
+    loadAvailableVoices();
+  }, []);
+
+  const loadAvailableVoices = async () => {
+    try {
+      const response = await fetch('/api/audio/generate?tenderId=' + (tenderId || 'default'));
+      const data = await response.json();
+      if (data.success && data.voices) {
+        setAvailableVoices(data.voices);
+      }
+    } catch (error) {
+      console.error('Error loading voices:', error);
+    }
+  };
+
+  const generateAudio = async () => {
+    if (!audioScript) {
+      alert('Please generate a script first');
+      return;
+    }
+
+    setIsGeneratingAudio(true);
+    try {
+      const response = await fetch('/api/audio/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          script: audioScript.script,
+          tenderId: tenderId || 'default',
+          options: audioGenerationOptions
+        })
+      });
+
+      const data = await response.json();
+      if (data.success && data.audioFile) {
+        // Update the script with audio file info
+        setAudioScript(prev => prev ? {
+          ...prev,
+          audioFile: data.audioFile
+        } : null);
+
+        // Create audio element for playback
+        const audio = new Audio(data.audioFile.fileUrl);
+        setGeneratedAudio(audio);
+        
+        console.log('✅ Audio generated successfully:', data.audioFile);
+        showNotification('🎵 Audio generated successfully!', 'success');
+      } else {
+        throw new Error(data.error || 'Failed to generate audio');
+      }
+    } catch (error) {
+      console.error('❌ Error generating audio:', error);
+      showNotification('Failed to generate audio. Please try again.', 'error');
+    } finally {
+      setIsGeneratingAudio(false);
+    }
+  };
+
+  const playGeneratedAudio = () => {
+    if (generatedAudio) {
+      if (isPlaying) {
+        generatedAudio.pause();
+        setIsPlaying(false);
+      } else {
+        generatedAudio.play();
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  const downloadAudio = () => {
+    if (audioScript?.audioFile) {
+      const link = document.createElement('a');
+      link.href = audioScript.audioFile.fileUrl;
+      link.download = `audio_${audioScript.title.replace(/[^a-zA-Z0-9]/g, '_')}.${audioScript.audioFile.format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -590,6 +916,38 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
               >
                 <Download size={16} />
               </button>
+              {audioScript && !audioScript.audioFile && (
+                <button
+                  onClick={generateAudio}
+                  disabled={isGeneratingAudio}
+                  className="p-2 text-muted-foreground hover:text-green-600 transition-colors disabled:opacity-50"
+                  title="Generate Audio"
+                >
+                  {isGeneratingAudio ? (
+                    <RefreshCw size={16} className="animate-spin" />
+                  ) : (
+                    <Volume2 size={16} />
+                  )}
+                </button>
+              )}
+              {audioScript?.audioFile && (
+                <>
+                  <button
+                    onClick={playGeneratedAudio}
+                    className="p-2 text-muted-foreground hover:text-blue-600 transition-colors"
+                    title={isPlaying ? "Pause Audio" : "Play Audio"}
+                  >
+                    {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                  </button>
+                  <button
+                    onClick={downloadAudio}
+                    className="p-2 text-muted-foreground hover:text-purple-600 transition-colors"
+                    title="Download Audio"
+                  >
+                    <Download size={16} />
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>
@@ -597,8 +955,116 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
 
       {/* Advanced Options */}
       {showAdvanced && (
-        <div className="bg-muted rounded-lg p-4 space-y-3">
+        <div className="bg-muted rounded-lg p-4 space-y-4">
           <h4 className="text-sm font-semibold text-heading text-foreground">Advanced Audio Options</h4>
+          
+          {/* Voice Settings */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h5 className="text-sm font-medium text-foreground">Voice Settings</h5>
+              <button
+                onClick={() => setShowVoiceSettings(!showVoiceSettings)}
+                className="text-xs text-blue-600 hover:text-blue-700"
+              >
+                {showVoiceSettings ? 'Hide' : 'Show'} Settings
+              </button>
+            </div>
+            
+            {showVoiceSettings && (
+              <div className="space-y-3 p-3 bg-white rounded-lg border">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Voice</label>
+                    <select
+                      value={audioGenerationOptions.voice}
+                      onChange={(e) => setAudioGenerationOptions(prev => ({ ...prev, voice: e.target.value }))}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    >
+                      {availableVoices.map(voice => (
+                        <option key={voice.name} value={voice.name}>
+                          {voice.description}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Format</label>
+                    <select
+                      value={audioGenerationOptions.format}
+                      onChange={(e) => setAudioGenerationOptions(prev => ({ ...prev, format: e.target.value as 'mp3' | 'wav' | 'ogg' }))}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="mp3">MP3</option>
+                      <option value="wav">WAV</option>
+                      <option value="ogg">OGG</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Speed: {audioGenerationOptions.speed}x
+                    </label>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2"
+                      step="0.1"
+                      value={audioGenerationOptions.speed}
+                      onChange={(e) => setAudioGenerationOptions(prev => ({ ...prev, speed: parseFloat(e.target.value) }))}
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Pitch: {audioGenerationOptions.pitch}
+                    </label>
+                    <input
+                      type="range"
+                      min="-20"
+                      max="20"
+                      step="1"
+                      value={audioGenerationOptions.pitch}
+                      onChange={(e) => setAudioGenerationOptions(prev => ({ ...prev, pitch: parseInt(e.target.value) }))}
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Volume: {audioGenerationOptions.volume}dB
+                    </label>
+                    <input
+                      type="range"
+                      min="-20"
+                      max="20"
+                      step="1"
+                      value={audioGenerationOptions.volume}
+                      onChange={(e) => setAudioGenerationOptions(prev => ({ ...prev, volume: parseInt(e.target.value) }))}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="twoHostMode"
+                    checked={audioGenerationOptions.twoHostMode}
+                    onChange={(e) => setAudioGenerationOptions(prev => ({ ...prev, twoHostMode: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <label htmlFor="twoHostMode" className="text-xs text-gray-700">
+                    Two-host conversation mode
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
+          
           <div className="grid grid-cols-2 gap-3">
             <button className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg hover:bg-muted transition-colors">
               <Save size={16} className="text-gray-600" />
@@ -747,6 +1213,40 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
               {showTextInput ? "Hide Text" : "Type Instead"}
             </button>
             
+            {/* Interactive Mode Toggle */}
+            <button
+              onClick={() => setIsInteractiveMode(!isInteractiveMode)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm ${
+                isInteractiveMode 
+                  ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              title={isInteractiveMode ? "Interactive mode: AI stops when you speak" : "Normal mode: AI waits for you to finish"}
+            >
+              <Zap size={16} />
+              {isInteractiveMode ? 'Interactive' : 'Normal'}
+            </button>
+
+            {/* Test Audio Button */}
+            <button
+              onClick={testSpeech}
+              className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm"
+              title="Test speech synthesis"
+            >
+              <Volume2 size={16} />
+              Test Audio
+            </button>
+            
+            {/* Direct Browser Test Button */}
+            <button
+              onClick={testBrowserSpeech}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm"
+              title="Test browser speech synthesis directly"
+            >
+              <Volume2 size={16} />
+              Direct Test
+            </button>
+            
             {/* Stop Audio Button */}
             {isSpeaking && (
               <button
@@ -825,6 +1325,15 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
             </div>
           )}
           
+          {/* Interactive Mode Indicator */}
+          {isInteractiveMode && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg mb-4">
+              <Zap size={16} className="text-orange-600" />
+              <span className="text-sm text-orange-700 font-medium">Interactive Mode</span>
+              <span className="text-xs text-orange-600">AI will stop when you speak</span>
+            </div>
+          )}
+
           {/* Conversation History */}
           {conversationHistory.length > 0 && (
             <div className="bg-white rounded-lg border border-gray-200 max-h-96 overflow-y-auto">
@@ -1098,6 +1607,46 @@ export function AudioOverview({ tenderId, interactiveMode = "preview" }: AudioOv
               </div>
             )}
           </div>
+
+          {/* Audio Player Section */}
+          {audioScript?.audioFile && (
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Volume2 className="text-green-600" size={16} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-green-800">Generated Audio</h4>
+                  <p className="text-xs text-green-600">
+                    {audioScript.audioFile.duration}s • {audioScript.audioFile.format.toUpperCase()} • 
+                    {(audioScript.audioFile.fileSize / 1024 / 1024).toFixed(1)}MB
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={playGeneratedAudio}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                  {isPlaying ? 'Pause' : 'Play'} Audio
+                </button>
+                
+                <button
+                  onClick={downloadAudio}
+                  className="flex items-center gap-2 px-3 py-2 bg-white text-green-600 border border-green-200 rounded-lg hover:bg-green-50 transition-colors"
+                >
+                  <Download size={16} />
+                  Download
+                </button>
+                
+                <div className="flex items-center gap-2 text-sm text-green-700">
+                  <span>Voice: {audioScript.audioFile.voice}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Progress Bar */}
           {interactiveMode === "preview" && audioScript.sections.length > 0 && (

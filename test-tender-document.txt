@@ -1,0 +1,64 @@
+REQUEST FOR PROPOSAL (RFP)
+Educational Software Platform Development
+
+Project Title: Educational Software Platform
+Project Reference: EDU-SOFT-2025-001
+
+BUDGET INFORMATION:
+Total Project Value: $1,200,000 USD
+Currency: United States Dollar
+Payment Terms: 30% advance, 40% on milestone completion, 30% on final delivery
+
+PROJECT LOCATION:
+Primary Location: New York, NY, USA
+Secondary Locations: Remote work allowed (up to 60%)
+Client Office: 123 Education Street, New York, NY 10001
+
+SUBMISSION DEADLINE:
+Tender Submission Deadline: March 15, 2025, 5:00 PM EST
+Late submissions will not be accepted.
+
+REQUIREMENTS:
+1. Minimum 5 years experience in educational software development
+2. Proven track record with learning management systems
+3. Experience with mobile app development (iOS and Android)
+4. Knowledge of accessibility standards (WCAG 2.1 AA)
+5. Ability to integrate with existing school databases
+6. Multi-language support capability
+7. Cloud-based deployment experience
+8. Data security and privacy compliance (FERPA, COPPA)
+9. User authentication and role management
+10. Real-time collaboration features
+
+TECHNICAL SPECIFICATIONS:
+- Frontend: React.js or Vue.js
+- Backend: Node.js or Python
+- Database: PostgreSQL or MongoDB
+- Cloud Platform: AWS or Azure
+- Mobile: React Native or Flutter
+
+DELIVERABLES:
+1. Web-based learning management system
+2. Mobile applications for iOS and Android
+3. Admin dashboard for school administrators
+4. Teacher portal with grade management
+5. Student portal with assignment tracking
+6. Parent portal for progress monitoring
+7. API documentation
+8. User manuals and training materials
+9. Source code and deployment scripts
+10. 12 months of post-launch support
+
+EVALUATION CRITERIA:
+- Technical approach (30%)
+- Team qualifications (25%)
+- Project timeline (20%)
+- Cost proposal (15%)
+- Past performance (10%)
+
+CONTACT INFORMATION:
+Project Manager: Sarah Johnson
+Email: sarah.johnson@education.gov
+Phone: +1 (555) 123-4567
+
+This RFP is issued by the Department of Education for the development of a comprehensive educational software platform to serve 50,000+ students across 200+ schools.

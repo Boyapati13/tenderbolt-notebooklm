@@ -43,8 +43,13 @@ import {
   Share2,
   Settings,
   Maximize2,
-  Minimize2
+  Minimize2,
+  PenTool,
+  Image,
+  Table,
+  Type
 } from "lucide-react";
+import { AdvancedProposalWriter } from "./advanced-proposal-writer";
 
 type DocumentComparison = {
   matchPercentage: number;
@@ -104,11 +109,14 @@ export function DocumentComparisonPanel({ tenderId, tenderTitle }: DocumentCompa
   const [proposalDraft, setProposalDraft] = useState<string>("");
   const [activeStep, setActiveStep] = useState<'upload' | 'select' | 'compare' | 'results'>('upload');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['overview']));
+  const [showAdvancedWriter, setShowAdvancedWriter] = useState(false);
+  const [savedProposals, setSavedProposals] = useState<any[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchDocuments();
     fetchComparisons();
+    fetchSavedProposals();
   }, [tenderId]);
 
   const fetchDocuments = async () => {
@@ -128,6 +136,16 @@ export function DocumentComparisonPanel({ tenderId, tenderTitle }: DocumentCompa
       setComparisons(data.insights || []);
     } catch (error) {
       console.error("Failed to fetch comparisons:", error);
+    }
+  };
+
+  const fetchSavedProposals = async () => {
+    try {
+      const response = await fetch(`/api/proposals?tenderId=${tenderId}`);
+      const data = await response.json();
+      setSavedProposals(data.proposals || []);
+    } catch (error) {
+      console.error("Failed to fetch saved proposals:", error);
     }
   };
 
@@ -429,24 +447,42 @@ export function DocumentComparisonPanel({ tenderId, tenderTitle }: DocumentCompa
             </button>
             
             {currentComparison && (
-              <button
-                onClick={draftProposal}
-                disabled={draftingProposal}
-                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {draftingProposal ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span className="font-semibold">Drafting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Edit3 size={20} />
-                    <span className="font-semibold">Draft Proposal</span>
-                  </>
-                )}
-              </button>
+              <>
+                <button
+                  onClick={draftProposal}
+                  disabled={draftingProposal}
+                  className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {draftingProposal ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span className="font-semibold">Drafting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Edit3 size={20} />
+                      <span className="font-semibold">Quick Draft</span>
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setShowAdvancedWriter(true)}
+                  className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 hover:scale-105 shadow-lg"
+                >
+                  <PenTool size={20} />
+                  <span className="font-semibold">Advanced Writer</span>
+                </button>
+              </>
             )}
+            
+            <button
+              onClick={() => setShowAdvancedWriter(true)}
+              className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-200 hover:scale-105 shadow-lg"
+            >
+              <Type size={20} />
+              <span className="font-semibold">New Proposal</span>
+            </button>
           </div>
         </div>
 
@@ -852,6 +888,25 @@ export function DocumentComparisonPanel({ tenderId, tenderTitle }: DocumentCompa
                 Copy to Clipboard
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Advanced Proposal Writer Modal */}
+      {showAdvancedWriter && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50">
+          <div className="w-full h-full">
+            <AdvancedProposalWriter
+              tenderId={tenderId}
+              tenderTitle={tenderTitle}
+              comparisonData={currentComparison}
+              onSave={(proposal) => {
+                showNotification("Proposal saved successfully!", "success");
+                fetchSavedProposals();
+                setShowAdvancedWriter(false);
+              }}
+              onClose={() => setShowAdvancedWriter(false)}
+            />
           </div>
         </div>
       )}

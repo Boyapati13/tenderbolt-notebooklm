@@ -1,0 +1,390 @@
+/* Advanced Proposal Writer Styles */
+.advanced-proposal-writer {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.advanced-proposal-writer.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  border-radius: 0;
+}
+
+.proposal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.proposal-section {
+  position: relative;
+  padding: 16px;
+  margin: 8px 0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  min-height: 40px;
+}
+
+.proposal-section:hover {
+  background-color: #f8fafc;
+}
+
+.proposal-section.selected {
+  background-color: #eff6ff;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.proposal-section-container {
+  position: relative;
+  margin: 16px 0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.proposal-section-container:hover {
+  background-color: #f8fafc;
+}
+
+.proposal-section-container.selected {
+  background-color: #eff6ff;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Image container styles */
+.image-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.image-container img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Table styles */
+.proposal-section table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.proposal-section th,
+.proposal-section td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.proposal-section th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  color: #374151;
+}
+
+.proposal-section tr:hover {
+  background-color: #f9fafb;
+}
+
+/* List styles */
+.proposal-section ul,
+.proposal-section ol {
+  padding-left: 24px;
+  margin: 16px 0;
+}
+
+.proposal-section li {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+/* Quote styles */
+.proposal-section blockquote {
+  margin: 16px 0;
+  padding: 16px 24px;
+  background-color: #f8fafc;
+  border-left: 4px solid #3b82f6;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: #4b5563;
+}
+
+/* Heading styles */
+.proposal-section h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 24px 0 16px 0;
+  line-height: 1.2;
+}
+
+.proposal-section h2 {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 20px 0 12px 0;
+  line-height: 1.3;
+}
+
+.proposal-section h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 16px 0 8px 0;
+  line-height: 1.4;
+}
+
+/* Text area styles */
+.proposal-section textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.proposal-section textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Input styles */
+.proposal-section input[type="text"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.proposal-section input[type="text"]:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Button styles */
+.proposal-writer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.proposal-writer-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.proposal-writer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Template grid styles */
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.template-card {
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.template-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.template-card h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.template-card p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.template-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.template-tag {
+  padding: 4px 8px;
+  background: #f3f4f6;
+  color: #374151;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Research standards styles */
+.research-standards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.standards-card {
+  padding: 20px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.standards-card h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.standards-card ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.standards-card li {
+  font-size: 0.875rem;
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .advanced-proposal-writer {
+    border-radius: 0;
+  }
+  
+  .proposal-section {
+    padding: 12px;
+  }
+  
+  .proposal-section h1 {
+    font-size: 1.875rem;
+  }
+  
+  .proposal-section h2 {
+    font-size: 1.5rem;
+  }
+  
+  .proposal-section h3 {
+    font-size: 1.25rem;
+  }
+  
+  .template-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .research-standards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Animation for section addition */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.proposal-section {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Loading states */
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f4f6;
+  border-radius: 50%;
+  border-top-color: #3b82f6;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Focus states for accessibility */
+.proposal-section:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .advanced-proposal-writer {
+    box-shadow: none;
+    border: none;
+  }
+  
+  .proposal-header {
+    display: none;
+  }
+  
+  .proposal-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .proposal-section img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}

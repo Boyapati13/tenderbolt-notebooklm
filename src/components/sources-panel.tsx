@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Search, FileText, Trash2, Brain, Folder, FolderOpen, ChevronDown, ChevronRight, FileCheck, Building2, File, Link } from "lucide-react";
+import { Plus, Search, FileText, Trash2, Brain, Folder, FolderOpen, ChevronDown, ChevronRight, FileCheck, Building2, File, Link, Sparkles, Zap } from "lucide-react";
 import { DiscoverySection } from "./discovery-section";
+import NotebookLMAutoPanel from "./notebooklm-auto-panel";
 
 type Document = {
   id: string;
@@ -28,7 +29,9 @@ export function SourcesPanel({ tenderId, onDocumentUploaded }: { tenderId?: stri
   const [analyzing, setAnalyzing] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['tender', 'supporting', 'company']));
-  const [activeTab, setActiveTab] = useState<'documents' | 'discovery'>('documents');
+  const [activeTab, setActiveTab] = useState<'documents' | 'discovery' | 'auto'>('documents');
+  const [showAutoPanel, setShowAutoPanel] = useState(false);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -88,6 +91,11 @@ export function SourcesPanel({ tenderId, onDocumentUploaded }: { tenderId?: stri
         // Dispatch custom events for other components to listen
         window.dispatchEvent(new CustomEvent('documentUploaded'));
         window.dispatchEvent(new CustomEvent('documentProcessed'));
+        
+        // Dispatch additional event after a delay to ensure backend processing is complete
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('tenderUpdated'));
+        }, 3000);
       } else {
         console.error("❌ Upload failed:", data);
         alert(`❌ Upload failed: ${data.error || 'Unknown error'}`);
@@ -211,6 +219,19 @@ export function SourcesPanel({ tenderId, onDocumentUploaded }: { tenderId?: stri
           <div className="flex items-center justify-center gap-2">
             <Link size={16} />
             Discovery
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveTab('auto')}
+          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+            activeTab === 'auto'
+              ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+          }`}
+        >
+          <div className="flex items-center justify-center gap-2">
+            <Sparkles size={16} />
+            Auto Analysis
           </div>
         </button>
       </div>
@@ -342,6 +363,16 @@ export function SourcesPanel({ tenderId, onDocumentUploaded }: { tenderId?: stri
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-1 flex-shrink-0">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedDocumentId(doc.id);
+                                      setActiveTab('auto');
+                                    }}
+                                    className="p-1 text-gray-400 hover:text-orange-600 transition-colors"
+                                    title="NotebookLM Auto Analysis"
+                                  >
+                                    <Zap size={16} />
+                                  </button>
                                   {tenderId && (
                                     <button
                                       onClick={() => analyzeDocument(doc.id)}
@@ -375,8 +406,16 @@ export function SourcesPanel({ tenderId, onDocumentUploaded }: { tenderId?: stri
               </div>
             )}
           </div>
-        ) : (
+        ) : activeTab === 'discovery' ? (
           <DiscoverySection tenderId={tenderId} />
+        ) : (
+          <div className="p-4">
+            <NotebookLMAutoPanel 
+              tenderId={tenderId || ''} 
+              documentId={selectedDocumentId || undefined}
+              onClose={() => setShowAutoPanel(false)}
+            />
+          </div>
         )}
       </div>
     </div>

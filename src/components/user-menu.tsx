@@ -82,7 +82,20 @@ export function UserMenu() {
             </button>
             <div className="border-t border-slate-200 dark:border-slate-700 my-2"></div>
             <button
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={async () => {
+                try {
+                  console.log("Signing out...");
+                  const result = await signOut({ 
+                    callbackUrl: "/en/auth/signin",
+                    redirect: true 
+                  });
+                  console.log("Sign out result:", result);
+                } catch (error) {
+                  console.error("Sign out error:", error);
+                  // Fallback: redirect manually
+                  window.location.href = "/en/auth/signin";
+                }
+              }}
               className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
             >
               <LogOut className="h-4 w-4" />

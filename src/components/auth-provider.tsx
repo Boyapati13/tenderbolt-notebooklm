@@ -62,9 +62,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [session]);
 
   const logout = async () => {
-    await signOut({ callbackUrl: "/auth/signin" });
-    setUser(null);
-    setOrganization(null);
+    try {
+      await signOut({ callbackUrl: "/en/auth/signin" });
+      setUser(null);
+      setOrganization(null);
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   const hasRole = (role: "admin" | "user" | "viewer"): boolean => {

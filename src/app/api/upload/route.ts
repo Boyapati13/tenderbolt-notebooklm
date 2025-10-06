@@ -172,15 +172,39 @@ export async function POST(req: Request) {
         if (Object.keys(metadata).length > 0) {
           await autoExtractService.updateTenderWithMetadata(tenderId, metadata);
           
-          // Perform gap analysis if we have requirements
+          // Calculate winning capabilities if we have requirements
           if (metadata.requirements && metadata.requirements.length > 0) {
+            console.log("🎯 Calculating winning capabilities...");
+            const capabilities = await autoExtractService.calculateWinningCapabilities(tenderId, metadata.requirements);
+            
+            // Perform gap analysis
             console.log("📊 Performing gap analysis...");
             const gapAnalysis = await autoExtractService.performGapAnalysis(tenderId, metadata.requirements);
+            
+            // Update tender with calculated capabilities
             await prisma.tender.update({
               where: { id: tenderId },
-              data: { gapAnalysis }
+              data: { 
+                gapAnalysis,
+                winProbability: capabilities.winningProbability,
+                capabilityScore: capabilities.capabilityScore,
+                matchedRequirements: capabilities.matchedRequirements,
+                totalRequirements: capabilities.totalRequirements,
+                strengths: JSON.stringify(capabilities.strengths),
+                weaknesses: JSON.stringify(capabilities.weaknesses),
+                recommendations: JSON.stringify(capabilities.recommendations)
+              }
+            });
+            
+            console.log("✅ Tender updated with calculated capabilities:", {
+              winningProbability: capabilities.winningProbability,
+              capabilityScore: capabilities.capabilityScore,
+              matchedRequirements: capabilities.matchedRequirements,
+              totalRequirements: capabilities.totalRequirements
             });
           }
+          
+          console.log("✅ Tender metadata updated successfully");
         }
         
         // Post summary as an AI message in chat

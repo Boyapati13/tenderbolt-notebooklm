@@ -1,0 +1,44 @@
+ISO 27001:2013 CERTIFICATE
+Information Security Management System
+
+CERTIFICATE HOLDER: Technovate Solutions Ltd
+CERTIFICATE NUMBER: ISO-27001-2023-001234
+ISSUED BY: International Standards Organization
+VALID FROM: January 15, 2023
+VALID UNTIL: January 15, 2026
+
+SCOPE OF CERTIFICATION:
+Design, development, and maintenance of educational software solutions including:
+- Learning Management Systems (LMS)
+- Student Information Systems (SIS)
+- Mobile Educational Applications
+- Cloud-based Educational Platforms
+- Data Analytics and Reporting Systems
+
+SECURITY CONTROLS IMPLEMENTED:
+- Information Security Policies and Procedures
+- Risk Assessment and Management
+- Access Control and User Management
+- Data Encryption and Protection
+- Incident Response and Business Continuity
+- Regular Security Audits and Reviews
+- Staff Training and Awareness Programs
+
+COMPLIANCE AREAS:
+- Data Protection and Privacy
+- Network Security
+- Application Security
+- Physical Security
+- Personnel Security
+- Business Continuity Planning
+
+AUDIT RESULTS:
+- Zero critical non-conformities
+- 2 minor observations (addressed)
+- 100% compliance with ISO 27001:2013 requirements
+- Annual surveillance audits scheduled
+
+CONTACT FOR VERIFICATION:
+Certification Body: Global Standards Certification Ltd
+Email: verification@globalstandards.com
+Phone: +1 (555) 987-6543

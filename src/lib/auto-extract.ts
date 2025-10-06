@@ -119,6 +119,128 @@ ${text.substring(0, 10000)}`;
   },
 
   /**
+   * Calculate winning capabilities and probability based on company documents vs tender requirements
+   */
+  async calculateWinningCapabilities(tenderId: string, requirements: string[]): Promise<{
+    winningProbability: number;
+    capabilityScore: number;
+    matchedRequirements: number;
+    totalRequirements: number;
+    strengths: string[];
+    weaknesses: string[];
+    recommendations: string[];
+  }> {
+    console.log("🎯 Calculating winning capabilities...");
+    
+    // Get company documents (supporting documents) - these are global
+    const companyDocs = await prisma.document.findMany({
+      where: {
+        OR: [
+          { category: 'supporting' },
+          { category: 'company' }
+        ]
+      },
+      select: { filename: true, text: true, documentType: true, category: true }
+    });
+
+    if (companyDocs.length === 0) {
+      console.log("⚠️  No company documents found for capability analysis");
+      return {
+        winningProbability: 0,
+        capabilityScore: 0,
+        matchedRequirements: 0,
+        totalRequirements: requirements.length,
+        strengths: [],
+        weaknesses: requirements,
+        recommendations: ["Upload company registration, ISO certificates, and other supporting documents to assess capabilities."]
+      };
+    }
+
+    const companyInfo = companyDocs.map(doc => 
+      `${doc.documentType || doc.filename} (${doc.category}):\n${doc.text.substring(0, 2000)}`
+    ).join("\n\n---\n\n");
+
+    const prompt = `Analyze our company's capability to win this tender by comparing our documents against the requirements.
+
+TENDER REQUIREMENTS:
+${requirements.map((req, i) => `${i + 1}. ${req}`).join("\n")}
+
+OUR COMPANY DOCUMENTS:
+${companyInfo}
+
+Provide a detailed capability analysis in this EXACT JSON format:
+
+{
+  "capabilityScore": 85,
+  "matchedRequirements": 8,
+  "totalRequirements": 10,
+  "winningProbability": 75,
+  "strengths": [
+    "Strong technical expertise in React.js development",
+    "Proven track record with educational software",
+    "ISO 27001 certification for data security"
+  ],
+  "weaknesses": [
+    "Limited experience with Flutter mobile development",
+    "No previous work with FERPA compliance"
+  ],
+  "recommendations": [
+    "Partner with a Flutter developer for mobile app",
+    "Obtain FERPA compliance training and certification",
+    "Highlight similar educational projects in proposal"
+  ]
+}
+
+CRITICAL RULES:
+- capabilityScore: 0-100 (how well we match overall)
+- matchedRequirements: number of requirements we clearly meet
+- totalRequirements: total number of requirements
+- winningProbability: 0-100 (realistic chance of winning)
+- Be specific and reference actual document content
+- Consider both technical and business requirements
+- Factor in experience, certifications, and past performance
+- Be realistic about gaps and challenges`;
+
+    try {
+      const result = await aiService.callAI(prompt, "You are an expert tender analyst. Analyze capabilities objectively and provide realistic assessments.");
+      
+      console.log("🤖 AI Capability Analysis Response:", result);
+      
+      // Parse JSON from response
+      let jsonText = result.trim();
+      
+      // Remove markdown code blocks if present
+      if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      }
+      
+      const analysis = JSON.parse(jsonText);
+      console.log("✅ Capability analysis complete:", analysis);
+      
+      return {
+        winningProbability: Math.min(100, Math.max(0, analysis.winningProbability || 0)),
+        capabilityScore: Math.min(100, Math.max(0, analysis.capabilityScore || 0)),
+        matchedRequirements: analysis.matchedRequirements || 0,
+        totalRequirements: analysis.totalRequirements || requirements.length,
+        strengths: analysis.strengths || [],
+        weaknesses: analysis.weaknesses || [],
+        recommendations: analysis.recommendations || []
+      };
+    } catch (error) {
+      console.error("❌ Capability analysis error:", error);
+      return {
+        winningProbability: 0,
+        capabilityScore: 0,
+        matchedRequirements: 0,
+        totalRequirements: requirements.length,
+        strengths: [],
+        weaknesses: requirements,
+        recommendations: ["Capability analysis failed. Please try again."]
+      };
+    }
+  },
+
+  /**
    * Perform gap analysis comparing tender requirements with company capabilities
    */
   async performGapAnalysis(tenderId: string, requirements: string[]): Promise<string> {

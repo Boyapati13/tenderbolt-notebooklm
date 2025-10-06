@@ -100,8 +100,8 @@ const handler = NextAuth({
     },
   },
   pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
+    signIn: "/en/auth/signin",
+    error: "/en/auth/error",
   },
   debug: process.env.NODE_ENV === "development",
 })

@@ -66,6 +66,17 @@ model Tender {
   autoSummary    String?       // Auto-generated summary
   gapAnalysis    String?       // Gap analysis vs company capabilities
   
+  // Calculated capabilities
+  capabilityScore Int?         @default(0) // 0-100 overall capability score
+  matchedRequirements Int?     @default(0) // Number of requirements matched
+  totalRequirements Int?       @default(0) // Total number of requirements
+  strengths       String?      // JSON array of company strengths
+  weaknesses      String?      // JSON array of identified weaknesses
+  recommendations String?      // JSON array of improvement recommendations
+  
+  // NotebookLM Auto Features
+  autoInsights    String?      // JSON string for auto-generated tender insights
+  
   // External file storage links
   oneDriveLink   String?       // OneDrive folder URL
   googleDriveLink String?      // Google Drive folder URL
@@ -86,6 +97,7 @@ model Tender {
   insights       Insight[]
   messages       Message[]
   teamMembers    TeamMember[]  // Assigned team members
+  proposals      Proposal[]    // Generated proposals
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }
@@ -120,6 +132,13 @@ model Document {
   tenderId        String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  
+  // NotebookLM Auto Features
+  autoAnalysis    String?  // JSON string for comprehensive auto analysis
+  autoTags        String?  // JSON string for auto-generated tags
+  autoQuestions   String?  // JSON string for auto-generated questions
+  autoValidation  String?  // JSON string for auto validation results
+  autoInsights    String?  // JSON string for auto-generated insights
 }
 
 model Insight {
@@ -240,4 +259,18 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Proposal {
+  id          String   @id @default(cuid())
+  title       String
+  version     String   @default("1.0")
+  content     Json     // Array of proposal sections
+  tenderId    String?
+  tender      Tender?  @relation(fields: [tenderId], references: [id])
+  metadata    Json?    // Additional metadata like lastModified, createdAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenderId])
 }

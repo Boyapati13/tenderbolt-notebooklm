@@ -47,6 +47,30 @@ interface VideoScript {
     style: "professional" | "casual" | "academic" | "creative";
     targetAudience: string;
   };
+  videoFile?: {
+    id: string;
+    fileUrl: string;
+    duration: number;
+    fileSize: number;
+    resolution: string;
+    fps: number;
+    format: string;
+  };
+}
+
+interface VideoGenerationOptions {
+  resolution: '720p' | '1080p' | '4K';
+  fps: number;
+  format: 'mp4' | 'avi' | 'mov' | 'webm';
+  quality: 'low' | 'medium' | 'high' | 'ultra';
+  includeAudio: boolean;
+  audioFile?: string;
+  transitionDuration: number;
+  slideDuration: number;
+  backgroundColor: string;
+  textColor: string;
+  fontFamily: string;
+  fontSize: number;
 }
 
 export function VideoOverview({ tenderId, interactiveMode = "preview" }: VideoOverviewProps) {
@@ -81,6 +105,25 @@ export function VideoOverview({ tenderId, interactiveMode = "preview" }: VideoOv
   });
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const videoRef = useRef<HTMLVideoElement>(null);
+  
+  // Video generation states
+  const [videoGenerationOptions, setVideoGenerationOptions] = useState<VideoGenerationOptions>({
+    resolution: '1080p',
+    fps: 30,
+    format: 'mp4',
+    quality: 'high',
+    includeAudio: true,
+    transitionDuration: 1,
+    slideDuration: 5,
+    backgroundColor: '#ffffff',
+    textColor: '#000000',
+    fontFamily: 'Arial',
+    fontSize: 24
+  });
+  const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
+  const [generatedVideo, setGeneratedVideo] = useState<HTMLVideoElement | null>(null);
+  const [showVideoSettings, setShowVideoSettings] = useState(false);
+  const [ffmpegAvailable, setFfmpegAvailable] = useState(true);
 
   // Enhanced presentation styles
   const presentationStyles = [
@@ -173,6 +216,97 @@ export function VideoOverview({ tenderId, interactiveMode = "preview" }: VideoOv
       showNotification("Failed to generate video script. Please try again.", "error");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  // Load FFmpeg availability on component mount
+  useEffect(() => {
+    checkFFmpegAvailability();
+  }, []);
+
+  const checkFFmpegAvailability = async () => {
+    try {
+      const response = await fetch('/api/video/generate?tenderId=' + (tenderId || 'default'));
+      const data = await response.json();
+      if (data.success) {
+        setFfmpegAvailable(data.ffmpegAvailable);
+      }
+    } catch (error) {
+      console.error('Error checking FFmpeg availability:', error);
+      setFfmpegAvailable(false);
+    }
+  };
+
+  const generateVideo = async () => {
+    if (!videoScript) {
+      alert('Please generate a video script first');
+      return;
+    }
+
+    if (!ffmpegAvailable) {
+      alert('FFmpeg is not available. Video generation requires FFmpeg to be installed.');
+      return;
+    }
+
+    setIsGeneratingVideo(true);
+    try {
+      const response = await fetch('/api/video/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slides: videoScript.slides,
+          tenderId: tenderId || 'default',
+          options: videoGenerationOptions
+        })
+      });
+
+      const data = await response.json();
+      if (data.success && data.videoFile) {
+        // Update the script with video file info
+        setVideoScript(prev => prev ? {
+          ...prev,
+          videoFile: data.videoFile
+        } : null);
+
+        // Create video element for playback
+        const video = document.createElement('video');
+        video.src = data.videoFile.fileUrl;
+        video.controls = true;
+        setGeneratedVideo(video);
+        
+        console.log('✅ Video generated successfully:', data.videoFile);
+        showNotification('🎬 Video generated successfully!', 'success');
+      } else {
+        throw new Error(data.error || 'Failed to generate video');
+      }
+    } catch (error) {
+      console.error('❌ Error generating video:', error);
+      showNotification('Failed to generate video. Please try again.', 'error');
+    } finally {
+      setIsGeneratingVideo(false);
+    }
+  };
+
+  const playGeneratedVideo = () => {
+    if (generatedVideo) {
+      if (isPlaying) {
+        generatedVideo.pause();
+        setIsPlaying(false);
+      } else {
+        generatedVideo.play();
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  const downloadVideo = () => {
+    if (videoScript?.videoFile) {
+      const link = document.createElement('a');
+      link.href = videoScript.videoFile.fileUrl;
+      link.download = `video_${videoScript.title.replace(/[^a-zA-Z0-9]/g, '_')}.${videoScript.videoFile.format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -346,6 +480,38 @@ export function VideoOverview({ tenderId, interactiveMode = "preview" }: VideoOv
               >
                 <Download size={16} />
               </button>
+              {videoScript && !videoScript.videoFile && (
+                <button
+                  onClick={generateVideo}
+                  disabled={isGeneratingVideo || !ffmpegAvailable}
+                  className="p-2 text-muted-foreground hover:text-green-600 transition-colors disabled:opacity-50"
+                  title={ffmpegAvailable ? "Generate Video" : "FFmpeg not available"}
+                >
+                  {isGeneratingVideo ? (
+                    <RefreshCw size={16} className="animate-spin" />
+                  ) : (
+                    <Video size={16} />
+                  )}
+                </button>
+              )}
+              {videoScript?.videoFile && (
+                <>
+                  <button
+                    onClick={playGeneratedVideo}
+                    className="p-2 text-muted-foreground hover:text-blue-600 transition-colors"
+                    title={isPlaying ? "Pause Video" : "Play Video"}
+                  >
+                    {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                  </button>
+                  <button
+                    onClick={downloadVideo}
+                    className="p-2 text-muted-foreground hover:text-purple-600 transition-colors"
+                    title="Download Video"
+                  >
+                    <Download size={16} />
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>
@@ -353,8 +519,137 @@ export function VideoOverview({ tenderId, interactiveMode = "preview" }: VideoOv
 
       {/* Advanced Options */}
       {showAdvanced && (
-        <div className="bg-muted rounded-lg p-4 space-y-3">
+        <div className="bg-muted rounded-lg p-4 space-y-4">
           <h4 className="text-sm font-semibold text-heading text-foreground">Advanced Video Options</h4>
+          
+          {/* Video Settings */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h5 className="text-sm font-medium text-foreground">Video Generation Settings</h5>
+              <button
+                onClick={() => setShowVideoSettings(!showVideoSettings)}
+                className="text-xs text-blue-600 hover:text-blue-700"
+              >
+                {showVideoSettings ? 'Hide' : 'Show'} Settings
+              </button>
+            </div>
+            
+            {showVideoSettings && (
+              <div className="space-y-3 p-3 bg-white rounded-lg border">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Resolution</label>
+                    <select
+                      value={videoGenerationOptions.resolution}
+                      onChange={(e) => setVideoGenerationOptions(prev => ({ ...prev, resolution: e.target.value as '720p' | '1080p' | '4K' }))}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="720p">720p (HD)</option>
+                      <option value="1080p">1080p (Full HD)</option>
+                      <option value="4K">4K (Ultra HD)</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Format</label>
+                    <select
+                      value={videoGenerationOptions.format}
+                      onChange={(e) => setVideoGenerationOptions(prev => ({ ...prev, format: e.target.value as 'mp4' | 'avi' | 'mov' | 'webm' }))}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="mp4">MP4</option>
+                      <option value="avi">AVI</option>
+                      <option value="mov">MOV</option>
+                      <option value="webm">WebM</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Quality</label>
+                    <select
+                      value={videoGenerationOptions.quality}
+                      onChange={(e) => setVideoGenerationOptions(prev => ({ ...prev, quality: e.target.value as 'low' | 'medium' | 'high' | 'ultra' }))}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="low">Low (Small file)</option>
+                      <option value="medium">Medium (Balanced)</option>
+                      <option value="high">High (Good quality)</option>
+                      <option value="ultra">Ultra (Best quality)</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      FPS: {videoGenerationOptions.fps}
+                    </label>
+                    <input
+                      type="range"
+                      min="24"
+                      max="60"
+                      step="1"
+                      value={videoGenerationOptions.fps}
+                      onChange={(e) => setVideoGenerationOptions(prev => ({ ...prev, fps: parseInt(e.target.value) }))}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Slide Duration: {videoGenerationOptions.slideDuration}s
+                    </label>
+                    <input
+                      type="range"
+                      min="3"
+                      max="15"
+                      step="1"
+                      value={videoGenerationOptions.slideDuration}
+                      onChange={(e) => setVideoGenerationOptions(prev => ({ ...prev, slideDuration: parseInt(e.target.value) }))}
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Transition: {videoGenerationOptions.transitionDuration}s
+                    </label>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="3"
+                      step="0.1"
+                      value={videoGenerationOptions.transitionDuration}
+                      onChange={(e) => setVideoGenerationOptions(prev => ({ ...prev, transitionDuration: parseFloat(e.target.value) }))}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="includeAudio"
+                    checked={videoGenerationOptions.includeAudio}
+                    onChange={(e) => setVideoGenerationOptions(prev => ({ ...prev, includeAudio: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <label htmlFor="includeAudio" className="text-xs text-gray-700">
+                    Include audio narration
+                  </label>
+                </div>
+                
+                {!ffmpegAvailable && (
+                  <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                    ⚠️ FFmpeg is not available. Video generation requires FFmpeg to be installed.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
           <div className="grid grid-cols-2 gap-3">
             <button className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg hover:bg-muted transition-colors">
               <Save size={16} className="text-gray-600" />
@@ -767,13 +1062,53 @@ export function VideoOverview({ tenderId, interactiveMode = "preview" }: VideoOv
             </div>
           </div>
 
+          {/* Video Player Section */}
+          {videoScript?.videoFile && (
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Video className="text-green-600" size={16} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-green-800">Generated Video</h4>
+                  <p className="text-xs text-green-600">
+                    {videoScript.videoFile.duration}s • {videoScript.videoFile.resolution} • {videoScript.videoFile.format.toUpperCase()} • 
+                    {(videoScript.videoFile.fileSize / 1024 / 1024).toFixed(1)}MB
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={playGeneratedVideo}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                  {isPlaying ? 'Pause' : 'Play'} Video
+                </button>
+                
+                <button
+                  onClick={downloadVideo}
+                  className="flex items-center gap-2 px-3 py-2 bg-white text-green-600 border border-green-200 rounded-lg hover:bg-green-50 transition-colors"
+                >
+                  <Download size={16} />
+                  Download
+                </button>
+                
+                <div className="flex items-center gap-2 text-sm text-green-700">
+                  <span>FPS: {videoScript.videoFile.fps}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Video Note */}
           <div className="bg-purple-50 border-t border-purple-200 p-4">
             <div className="flex items-start gap-2">
               <Sparkles size={16} className="text-purple-600 mt-0.5" />
               <div className="text-sm text-purple-800">
                 <strong>AI-Powered Video Generation:</strong> This script includes slide content, narration, and visual suggestions. 
-                For best results, use tools like PowerPoint, Canva Video, or Adobe Express with the recommended animations and transitions.
+                {videoScript?.videoFile ? ' Video has been generated and is ready for playback and download.' : ' Click "Generate Video" to create an actual video file from these slides.'}
               </div>
             </div>
           </div>

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { tenderId, reportType } = await req.json();
+    const { tenderId, reportType, customReportConfig } = await req.json();
     
     if (!tenderId || !reportType) {
       return NextResponse.json(
@@ -63,13 +63,21 @@ export async function POST(req: Request) {
     tender.documents = [...tender.documents, ...globalDocuments];
 
     // Generate report using AI
-    const report = await aiService.generateReport(reportType, tender);
+    let report;
+    if (reportType === "custom" && customReportConfig) {
+      report = await aiService.generateReport(reportType, tender, customReportConfig);
+    } else {
+      report = await aiService.generateReport(reportType, tender);
+    }
     
     return NextResponse.json({
       success: true,
-      report,
+      content: report,
+      report: report,
       reportType,
-      tenderId
+      tenderId,
+      wordCount: Math.floor(report.length / 5),
+      title: customReportConfig?.title || `${reportType} Report`
     });
   } catch (error) {
     console.error("Error generating report:", error);

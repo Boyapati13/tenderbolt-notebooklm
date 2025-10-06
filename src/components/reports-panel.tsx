@@ -8,7 +8,7 @@ import {
   ChevronDown, ChevronRight, ChevronUp, ChevronLeft, MoreHorizontal,
   BookOpen, Presentation, FileSpreadsheet, Image, Video, Music,
   AlertCircle, Info, CheckSquare, Square, Star, Heart, Bookmark,
-  Plus, Minus, RotateCcw, Upload, Send, Mail, MessageSquare
+  Plus, Minus, RotateCcw, Upload, Send, Mail, MessageSquare, X
 } from "lucide-react";
 
 interface ReportsPanelProps {
@@ -180,6 +180,21 @@ export function ReportsPanel({ tenderId, interactiveMode = "preview" }: ReportsP
   const [isPresenting, setIsPresenting] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showCustomization, setShowCustomization] = useState(false);
+  const [showCustomReportModal, setShowCustomReportModal] = useState(false);
+  const [customReportConfig, setCustomReportConfig] = useState({
+    title: "",
+    description: "",
+    requirements: "",
+    sections: [] as string[],
+    targetAudience: [] as string[],
+    complexity: "moderate" as "simple" | "moderate" | "complex",
+    estimatedTime: "10-20 min",
+    includeCharts: true,
+    includeImages: false,
+    includeReferences: true,
+    tone: "professional",
+    length: "medium"
+  });
   const [customizationOptions, setCustomizationOptions] = useState({
     tone: "professional",
     length: "medium",
@@ -267,6 +282,91 @@ export function ReportsPanel({ tenderId, interactiveMode = "preview" }: ReportsP
     } catch (error) {
       console.error("Error generating report:", error);
       showNotification("Failed to generate report. Please try again.", "error");
+    } finally {
+      setGenerating(null);
+    }
+  };
+
+  const generateCustomReport = async () => {
+    if (!customReportConfig.title || customReportConfig.sections.length === 0 || !customReportConfig.requirements) {
+      alert("Please provide a title, at least one section, and specify what you need from the report.");
+      return;
+    }
+
+    console.log("🎯 Generating custom report with config:", customReportConfig);
+    setGenerating("custom" as ReportType);
+    
+    try {
+      const requestBody = {
+        tenderId: tenderId || "tender_default",
+        reportType: "custom",
+        format: selectedFormat,
+        customReportConfig,
+        interactiveMode,
+        customization: customizationOptions
+      };
+      
+      console.log("📡 Sending request to /api/ai/reports:", requestBody);
+      
+      const response = await fetch("/api/ai/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log("📥 Response status:", response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("✅ Response data:", data);
+        
+        const newReport: Report = {
+          id: `custom-report-${Date.now()}`,
+          type: "custom" as ReportType,
+          title: customReportConfig.title,
+          content: data.content || data.report || "No content generated",
+          format: selectedFormat,
+          metadata: {
+            wordCount: data.wordCount || Math.floor((data.content || data.report || "").length / 5) || 0,
+            readingTime: Math.ceil((data.wordCount || Math.floor((data.content || data.report || "").length / 5)) / 200),
+            complexity: customReportConfig.complexity,
+            targetAudience: customReportConfig.targetAudience,
+            generatedAt: new Date().toISOString(),
+            lastModified: new Date().toISOString(),
+            author: "AI Assistant",
+            version: "1.0",
+            tags: ["custom", "ai-generated", ...customReportConfig.targetAudience.map(a => a.toLowerCase())]
+          },
+          sections: customReportConfig.sections.map((section, index) => ({
+            id: `section-${index}`,
+            title: section,
+            content: "",
+            order: index,
+            wordCount: 0
+          })),
+          analytics: {
+            views: 0,
+            downloads: 0,
+            shares: 0,
+            rating: 0
+          }
+        };
+        
+        console.log("📄 Created report object:", newReport);
+        setCurrentReport(newReport);
+        setShowCustomReportModal(false);
+        setShowTemplates(false);
+        
+        // Add to history
+        setReportHistory(prev => [newReport, ...prev.slice(0, 9)]);
+      } else {
+        const errorData = await response.json();
+        console.error("❌ Failed to generate custom report:", errorData);
+        alert(`Failed to generate report: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error("❌ Error generating custom report:", error);
+      alert(`Error generating report: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setGenerating(null);
     }
@@ -491,6 +591,13 @@ export function ReportsPanel({ tenderId, interactiveMode = "preview" }: ReportsP
         </div>
         
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowCustomization(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <Plus size={16} />
+            Create Custom Report
+          </button>
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="p-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -1244,6 +1351,254 @@ export function ReportsPanel({ tenderId, interactiveMode = "preview" }: ReportsP
             <div className="text-sm text-blue-800">
               <strong>AI-Powered Report Generation:</strong> Choose from professional templates tailored for different audiences and use cases. 
               Reports are generated based on your tender data, documents, and insights for maximum relevance and accuracy.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Report Creation Modal */}
+      {showCustomReportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-gray-900">Create Custom Report</h3>
+              <button
+                onClick={() => setShowCustomReportModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Report Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={customReportConfig.title}
+                    onChange={(e) => setCustomReportConfig(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter report title"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={customReportConfig.description}
+                    onChange={(e) => setCustomReportConfig(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={3}
+                    placeholder="Describe what this report will cover"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    What I Need from This Report *
+                  </label>
+                  <textarea
+                    value={customReportConfig.requirements}
+                    onChange={(e) => setCustomReportConfig(prev => ({ ...prev, requirements: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={4}
+                    placeholder="Specify what you need from this report. For example:
+- Detailed analysis of technical requirements
+- Cost breakdown and budget recommendations
+- Risk assessment and mitigation strategies
+- Timeline and resource planning
+- Competitive analysis and positioning
+- Executive summary for decision making"
+                  />
+                </div>
+              </div>
+
+              {/* Report Sections */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Report Sections *
+                </label>
+                <div className="space-y-2">
+                  {customReportConfig.sections.map((section, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={section}
+                        onChange={(e) => {
+                          const newSections = [...customReportConfig.sections];
+                          newSections[index] = e.target.value;
+                          setCustomReportConfig(prev => ({ ...prev, sections: newSections }));
+                        }}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder={`Section ${index + 1}`}
+                      />
+                      <button
+                        onClick={() => {
+                          const newSections = customReportConfig.sections.filter((_, i) => i !== index);
+                          setCustomReportConfig(prev => ({ ...prev, sections: newSections }));
+                        }}
+                        className="p-2 text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        <Minus size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setCustomReportConfig(prev => ({ 
+                      ...prev, 
+                      sections: [...prev.sections, ""] 
+                    }))}
+                    className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    <Plus size={16} />
+                    Add Section
+                  </button>
+                </div>
+              </div>
+
+              {/* Target Audience */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Target Audience
+                </label>
+                <div className="space-y-2">
+                  {customReportConfig.targetAudience.map((audience, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={audience}
+                        onChange={(e) => {
+                          const newAudience = [...customReportConfig.targetAudience];
+                          newAudience[index] = e.target.value;
+                          setCustomReportConfig(prev => ({ ...prev, targetAudience: newAudience }));
+                        }}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder={`Audience ${index + 1}`}
+                      />
+                      <button
+                        onClick={() => {
+                          const newAudience = customReportConfig.targetAudience.filter((_, i) => i !== index);
+                          setCustomReportConfig(prev => ({ ...prev, targetAudience: newAudience }));
+                        }}
+                        className="p-2 text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        <Minus size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setCustomReportConfig(prev => ({ 
+                      ...prev, 
+                      targetAudience: [...prev.targetAudience, ""] 
+                    }))}
+                    className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    <Plus size={16} />
+                    Add Audience
+                  </button>
+                </div>
+              </div>
+
+              {/* Report Settings */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Complexity
+                  </label>
+                  <select
+                    value={customReportConfig.complexity}
+                    onChange={(e) => setCustomReportConfig(prev => ({ 
+                      ...prev, 
+                      complexity: e.target.value as "simple" | "moderate" | "complex" 
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="simple">Simple</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="complex">Complex</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Estimated Time
+                  </label>
+                  <input
+                    type="text"
+                    value={customReportConfig.estimatedTime}
+                    onChange={(e) => setCustomReportConfig(prev => ({ ...prev, estimatedTime: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., 10-20 min"
+                  />
+                </div>
+              </div>
+
+              {/* Additional Options */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-gray-700">Additional Options</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={customReportConfig.includeCharts}
+                      onChange={(e) => setCustomReportConfig(prev => ({ ...prev, includeCharts: e.target.checked }))}
+                      className="rounded border-gray-300"
+                    />
+                    <span className="text-sm text-gray-700">Include charts and graphs</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={customReportConfig.includeImages}
+                      onChange={(e) => setCustomReportConfig(prev => ({ ...prev, includeImages: e.target.checked }))}
+                      className="rounded border-gray-300"
+                    />
+                    <span className="text-sm text-gray-700">Include images and diagrams</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={customReportConfig.includeReferences}
+                      onChange={(e) => setCustomReportConfig(prev => ({ ...prev, includeReferences: e.target.checked }))}
+                      className="rounded border-gray-300"
+                    />
+                    <span className="text-sm text-gray-700">Include references and citations</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowCustomReportModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={generateCustomReport}
+                disabled={generating === "custom" || !customReportConfig.title || customReportConfig.sections.length === 0 || !customReportConfig.requirements}
+                className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {generating === "custom" ? (
+                  <>
+                    <RefreshCw size={16} className="animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Plus size={16} />
+                    Create Report
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

@@ -3,16 +3,15 @@
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import clsx from "clsx";
-import { FileCheck, Building2, Home, BarChart3, Users, Settings, Sparkles, Plug, Search, Bot, BookOpen } from "lucide-react";
+import { FileCheck, Building2, Home, BarChart3, Users, Settings, Sparkles, Plug, Search, Bot } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const NAV_ITEMS = [
   { path: "dashboard", label: "Dashboard", icon: Home, color: "text-blue-600", gradient: "from-blue-500 to-blue-600" },
   { path: "projects", label: "Projects", icon: BarChart3, color: "text-indigo-600", gradient: "from-indigo-500 to-indigo-600" },
+  { path: "ai-assistant", label: "AI Assistant", icon: Bot, color: "text-pink-600", gradient: "from-pink-500 to-pink-600" },
   { path: "analytics", label: "Analytics", icon: BarChart3, color: "text-purple-600", gradient: "from-purple-500 to-purple-600" },
   { path: "management", label: "Management", icon: Users, color: "text-orange-600", gradient: "from-orange-500 to-orange-600" },
-  { path: "ai-assistant", label: "AI Assistant", icon: Bot, color: "text-pink-600", gradient: "from-pink-500 to-pink-600" },
-  { path: "study-tools", label: "Study Tools", icon: BookOpen, color: "text-teal-600", gradient: "from-teal-500 to-teal-600" },
   { path: "integrations", label: "Integrations", icon: Plug, color: "text-cyan-600", gradient: "from-cyan-500 to-cyan-600" },
   { path: "internet-search", label: "Internet Search", icon: Search, color: "text-emerald-600", gradient: "from-emerald-500 to-emerald-600" },
   { path: "supporting-documents", label: "Supporting Documents", icon: FileCheck, color: "text-green-600", gradient: "from-green-500 to-green-600" },

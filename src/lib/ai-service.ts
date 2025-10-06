@@ -272,7 +272,7 @@ Provide only a number between 0-100 representing the win probability.`;
   }
 
   // Report generation
-  async generateReport(type: string, tenderData: any): Promise<string> {
+  async generateReport(type: string, tenderData: any, customConfig?: any): Promise<string> {
     const insights = tenderData.insights || [];
     const documents = tenderData.documents || [];
     const stages = tenderData.stages || [];
@@ -343,7 +343,7 @@ ${documentContent || 'No document content available'}
       case 'technical':
         return await this.generateTechnicalReport(tenderData, context);
       default:
-        return await this.generateCustomReport(tenderData, context);
+        return await this.generateCustomReport(tenderData, context, customConfig);
     }
   }
 
@@ -449,47 +449,73 @@ Documents: ${documents.length} uploaded
   }
 
   private async generateInteractiveAudio(tenderData: any, context: string): Promise<any> {
-    // For interactive mode, return a simple structure that enables conversation
+    const prompt = `Create an interactive Q&A discussion script for this tender opportunity.
+
+${context}
+
+Create a natural conversation in Q&A format between a Questioner and an Expert. Use questions like:
+- "So, what exactly is this project about?"
+- "That's interesting! What's the budget for this initiative?"
+- "Great question! The deadline is March 15th, which gives us..."
+- "What do you think are the main challenges we'll face?"
+
+Make it sound like a real discussion with natural follow-up questions and clarifications.`;
+
+    const response = await this.callAI(prompt, 'You are a professional audio script writer specializing in Q&A discussions and interactive business content.');
+    
     return {
       style: "interactive",
-      title: `Interactive Q&A: ${tenderData.title}`,
-      duration: "Unlimited",
-      script: "Interactive voice assistant ready for conversation.",
+      title: `Q&A Discussion: ${tenderData.title}`,
+      duration: "6-8 minutes",
+      script: response,
       sections: [
         {
-          speaker: "AI Assistant",
+          speaker: "Questioner",
           timestamp: "0:00",
-          text: "Hello! I'm your AI assistant for this tender. You can ask me anything about the project details, requirements, timeline, or any other questions you have. What would you like to know?",
-          duration: 10
+          text: "So, what exactly is this project about?",
+          duration: 5
+        },
+        {
+          speaker: "Expert",
+          timestamp: "0:05",
+          text: response.substring(0, 200) + "...",
+          duration: 30
         }
       ],
       metadata: {
-        wordCount: 0,
+        wordCount: Math.floor(response.length / 5),
         speakingRate: 150,
         complexity: "intermediate",
-        tone: "conversational"
+        tone: "conversational",
+        format: "Q&A Discussion"
       }
     };
   }
 
   private async generateConversationalAudio(tenderData: any, context: string): Promise<any> {
-    const prompt = `Create a conversational 5-8 minute audio script for this tender opportunity:
+    const prompt = `Create a conversational Q&A discussion script for this tender opportunity:
 
 ${context}
 
-Write a natural, engaging conversation between two people discussing this tender. Include:
-1. Opening (30 seconds) - Casual introduction to the opportunity
-2. Key Details Discussion (3 minutes) - Value, client, deadline, win probability
-3. Requirements Analysis (2 minutes) - Main requirements and scope
-4. Risk Assessment (1.5 minutes) - Major risks and mitigation strategies
-5. Strategy Discussion (1 minute) - Win strategy and next steps
-6. Closing (30 seconds) - Call to action and next steps
+Write a natural Q&A conversation between two people discussing this tender. Use questions like:
+- "So, what exactly is this project about?"
+- "That's interesting! What's the budget for this initiative?"
+- "Great question! The deadline is March 15th, which gives us..."
+- "What do you think are the main challenges we'll face?"
+
+Include:
+1. Opening Q&A (30 seconds) - Introduction to the opportunity
+2. Key Details Q&A (3 minutes) - Value, client, deadline, win probability
+3. Requirements Q&A (2 minutes) - Main requirements and scope
+4. Risk Assessment Q&A (1.5 minutes) - Major risks and mitigation strategies
+5. Strategy Q&A (1 minute) - Win strategy and next steps
+6. Closing Q&A (30 seconds) - Call to action and next steps
 
 Format as: [TIMESTAMP] Speaker: Dialogue text
 
 Make it sound natural and conversational, like two colleagues discussing a business opportunity.`;
 
-    const response = await this.callAI(prompt, "You are a professional script writer creating conversational business discussions.");
+    const response = await this.callAI(prompt, "You are a professional script writer creating Q&A discussions and conversational business content.");
     
     if (response.includes("Mock") || response.length < 200) {
       return this.createMockConversationalAudio(tenderData);
@@ -869,23 +895,97 @@ Focus on technical depth and accuracy.`;
     return response;
   }
 
-  private async generateCustomReport(tenderData: any, context: string): Promise<string> {
-    const prompt = `Generate a comprehensive custom report for this tender:
+  private async generateCustomReport(tenderData: any, context: string, customConfig?: any): Promise<string> {
+    console.log("🤖 generateCustomReport called with config:", customConfig);
+    
+    if (customConfig) {
+      const sections = customConfig.sections.join('\n- ');
+      const audience = customConfig.targetAudience.join(', ');
+      
+      const prompt = `Generate a custom report titled "${customConfig.title}" for this tender:
+
+${context}
+
+Report Configuration:
+- Title: ${customConfig.title}
+- Description: ${customConfig.description || 'Not provided'}
+- Target Audience: ${audience || 'General audience'}
+- Complexity Level: ${customConfig.complexity}
+- Estimated Time: ${customConfig.estimatedTime}
+
+What the User Needs from This Report:
+${customConfig.requirements}
+
+Required Sections:
+- ${sections}
+
+Additional Requirements:
+- Include charts and graphs: ${customConfig.includeCharts ? 'Yes' : 'No'}
+- Include images and diagrams: ${customConfig.includeImages ? 'Yes' : 'No'}
+- Include references and citations: ${customConfig.includeReferences ? 'Yes' : 'No'}
+- Tone: ${customConfig.tone}
+- Length: ${customConfig.length}
+
+IMPORTANT: Focus specifically on what the user needs from this report. Make sure the content directly addresses their requirements and provides the specific information they're looking for. Create a professional, well-structured report that follows the specified sections and requirements while prioritizing the user's stated needs.`;
+
+      console.log("📝 Generated prompt:", prompt.substring(0, 500) + "...");
+      
+      const response = await this.callAI(prompt, `You are a professional report writer creating custom reports for tender opportunities. Tailor the content to the specified audience and complexity level.`);
+      
+      console.log("🤖 AI Response length:", response.length);
+      console.log("🤖 AI Response preview:", response.substring(0, 200) + "...");
+      
+      if (response.includes("Mock") || response.length < 200) {
+        console.log("🔄 Using mock report due to short response");
+        return this.createMockCustomReport(tenderData, customConfig);
+      }
+      
+      return response;
+    } else {
+      console.log("🔄 No custom config, using default custom report");
+      const prompt = `Generate a comprehensive custom report for this tender:
 
 ${context}
 
 Create a well-structured report covering all relevant aspects of this opportunity.`;
 
-    const response = await this.callAI(prompt);
-    
-    if (response.includes("Mock") || response.length < 200) {
-      return this.createMockBriefingReport(tenderData);
+      const response = await this.callAI(prompt);
+      
+      if (response.includes("Mock") || response.length < 200) {
+        return this.createMockBriefingReport(tenderData);
+      }
+      
+      return response;
     }
-    
-    return response;
   }
 
   // Mock report generators for fallback
+  private createMockCustomReport(tenderData: any, customConfig: any): string {
+    const sections = customConfig.sections.map((section: string, index: number) => 
+      `### ${index + 1}. ${section}\n[Content for ${section} would be generated here]`
+    ).join('\n\n');
+    
+    return `# ${customConfig.title}
+
+## Report Overview
+${customConfig.description || 'Custom report generated for tender analysis'}
+
+**Target Audience**: ${customConfig.targetAudience.join(', ') || 'General audience'}
+**Complexity Level**: ${customConfig.complexity}
+**Estimated Reading Time**: ${customConfig.estimatedTime}
+
+## What You Need from This Report
+${customConfig.requirements}
+
+---
+
+${sections}
+
+---
+
+*This is a mock custom report. In a real implementation, this would be generated by AI based on the tender data and custom configuration, specifically addressing your requirements: "${customConfig.requirements}"*`;
+  }
+
   private createMockBriefingReport(tenderData: any): string {
     return `# TENDER BRIEFING REPORT
 ## ${tenderData.title}
@@ -1698,7 +1798,13 @@ Make them specific, practical, and test understanding of the actual tender requi
   private async retrieveRelevantDocuments(query: string, tenderId?: string): Promise<Array<{docId: string, filename: string, text: string}>> {
     try {
       const documents = await prisma.document.findMany({
-        where: tenderId ? { tenderId } : {},
+        where: tenderId ? {
+          OR: [
+            { tenderId, category: 'tender' }, // Tender-specific documents
+            { category: 'supporting' },        // Global supporting documents
+            { category: 'company' },           // Global company documents
+          ]
+        } : {},
         take: 5,
         orderBy: { createdAt: 'desc' }
       });

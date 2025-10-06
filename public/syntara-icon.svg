@@ -1,0 +1,17 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Molecular structure icon only -->
+  <!-- Bottom left circle -->
+  <circle cx="10" cy="32" r="8" fill="#1E5BA8"/>
+  <!-- Middle left circle -->
+  <circle cx="10" cy="14" r="8" fill="#1E5BA8"/>
+  <!-- Middle right circle -->
+  <circle cx="28" cy="8" r="8" fill="#1E5BA8"/>
+  <!-- Top circle -->
+  <circle cx="35" cy="4" r="5" fill="#4CAF89"/>
+  
+  <!-- Connection lines -->
+  <line x1="10" y1="24" x2="10" y2="22" stroke="#1E5BA8" stroke-width="3"/>
+  <line x1="16" y1="11" x2="22" y2="9" stroke="#1E5BA8" stroke-width="3"/>
+  <line x1="31" y1="6" x2="33" y2="5" stroke="#1E5BA8" stroke-width="3"/>
+</svg>
+

@@ -1,0 +1,69 @@
+{
+  "name": "Syntara Tenders AI",
+  "short_name": "Syntara",
+  "description": "Professional tender management application with AI intelligence",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/syntara-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/syntara-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/images/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View tender dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/syntara-icon.svg",
+          "sizes": "any"
+        }
+      ]
+    },
+    {
+      "name": "New Project",
+      "short_name": "New Project",
+      "description": "Create a new tender project",
+      "url": "/management",
+      "icons": [
+        {
+          "src": "/syntara-icon.svg",
+          "sizes": "any"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

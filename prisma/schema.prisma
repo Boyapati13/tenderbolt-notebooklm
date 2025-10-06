@@ -1,0 +1,243 @@
+// Datasource: SQLite for local dev
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  users     User[]
+  tenders   Tender[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  name           String?
+  password       String?       // For credentials login
+  role           String?       // Team member role (e.g., Project Manager, Bid Writer, Technical Lead)
+  avatar         String?       // Avatar URL
+  phone          String?       // Contact number
+  department     String?       // Department/Division
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  tenders        Tender[]      @relation("OwnerTenders")
+  assignments    TeamMember[]  // Projects assigned to this user
+  accounts       Account[]
+  sessions       Session[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Tender {
+  id             String        @id @default(cuid())
+  title          String
+  description    String?
+  value          Int?          // value in dollars
+  valueMinor     Int?          // value in minor units e.g. cents
+  currency       String?       // e.g. USD
+  deadline       DateTime?     // submission deadline
+  dueDate        DateTime?
+  status         String        @default("discovery") // discovery, interested, working, submitted, closed, not_interested
+  winProbability Int           @default(0) // 0-100
+  technicalScore Int?          @default(0) // 0-100
+  commercialScore Int?         @default(0) // 0-100
+  complianceScore Int?         @default(0) // 0-100
+  riskScore      Int?          @default(0) // 0-100
+  client         String?       // client name
+  location       String?       // tender location/region
+  stage          String?       // current stage (deprecated, use status)
+  submissionDays Int?          // days to submission
+  lastScoredAt   DateTime?     // when scoring was last updated
+  goNoGo         GoDecision    @default(UNDECIDED)
+  
+  // Auto-extracted metadata
+  autoExtractedTitle String?   // Title extracted from tender document
+  autoExtractedBudget String?  // Budget/value extracted from document
+  autoExtractedLocation String? // Location extracted from document
+  autoExtractedDeadlines String? // JSON array of deadlines found
+  autoSummary    String?       // Auto-generated summary
+  gapAnalysis    String?       // Gap analysis vs company capabilities
+  
+  // External file storage links
+  oneDriveLink   String?       // OneDrive folder URL
+  googleDriveLink String?      // Google Drive folder URL
+  externalLinks  ExternalLink[] // Other external links
+  
+  // Project tracking
+  priority       String?       // high, medium, low
+  tags           String?       // comma-separated tags
+  notes          String?       // internal notes
+
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organizationId String
+  owner          User?         @relation("OwnerTenders", fields: [ownerId], references: [id])
+  ownerId        String?
+
+  stages         Stage[]
+  documents      Document[]
+  insights       Insight[]
+  messages       Message[]
+  teamMembers    TeamMember[]  // Assigned team members
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Stage {
+  id        String   @id @default(cuid())
+  name      String
+  order     Int
+  dueDate   DateTime?
+  status    StageStatus @default(PENDING)
+  tender    Tender   @relation(fields: [tenderId], references: [id])
+  tenderId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Document {
+  id              String   @id @default(cuid())
+  filename        String
+  mimeType        String
+  sizeBytes       Int
+  url             String?
+  text            String?
+  googleCloudUrl  String?  // Google Cloud Storage URL
+  googleDriveUrl  String?  // Google Drive URL
+  googleDriveId   String?  // Google Drive file ID
+  category        String?  @default("tender") // tender, supporting, compliance, company
+  documentType    String?  // e.g., "Company Registration", "ISO Certificate", "Tender RFQ"
+  summary         String?  // Auto-generated summary
+  extractedData   String?  // JSON of extracted metadata
+  tender          Tender   @relation(fields: [tenderId], references: [id])
+  tenderId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Insight {
+  id        String   @id @default(cuid())
+  type      String   // requirement, compliance, risk, deadline, document_comparison
+  content   String
+  citation  String?
+  metadata  Json?    // Additional metadata for complex insights like document comparisons
+  tender    Tender   @relation(fields: [tenderId], references: [id])
+  tenderId  String
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  role      String   // user/assistant/system
+  content   String
+  tender    Tender   @relation(fields: [tenderId], references: [id])
+  tenderId  String
+  createdAt DateTime @default(now())
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  role      String   // Project Manager, Bid Writer, Technical Lead, Reviewer, etc.
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  tender    Tender   @relation(fields: [tenderId], references: [id])
+  tenderId  String
+  assignedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, tenderId]) // A user can only be assigned once per tender
+}
+
+model ExternalLink {
+  id          String   @id @default(cuid())
+  label       String   // e.g., "Project Files", "Client Portal"
+  url         String   // Full URL to external resource
+  type        String   // onedrive, google_drive, sharepoint, dropbox, custom
+  description String?  // Optional description
+  tender      Tender   @relation(fields: [tenderId], references: [id])
+  tenderId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum TenderStatus {
+  DRAFT
+  QUALIFICATION
+  PROPOSAL
+  NEGOTIATION
+  SUBMITTED
+  AWARDED
+  LOST
+}
+
+enum StageStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETE
+}
+
+enum GoDecision {
+  UNDECIDED
+  GO
+  NO_GO
+}
+
+model DiscoveryLink {
+  id          String   @id @default(cuid())
+  tenderId    String   // Can be 'global' for shared links
+  title       String
+  url         String
+  type        String   // website, youtube, document, article, other
+  description String?
+  tags        Json     @default("[]") // Array of strings
+  verified    Boolean  @default(false)
+  addedAt     String   // ISO string
+  lastAccessed String?
+  accessCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// NextAuth.js required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

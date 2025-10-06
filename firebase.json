@@ -8,24 +8,65 @@
     ],
     "rewrites": [
       {
+        "source": "/en/studio",
+        "destination": "/en/studio/index.html"
+      },
+      {
+        "source": "/en/studio/**",
+        "destination": "/en/studio/index.html"
+      },
+      {
+        "source": "/en/dashboard",
+        "destination": "/en/dashboard/index.html"
+      },
+      {
+        "source": "/en/dashboard/**",
+        "destination": "/en/dashboard/index.html"
+      },
+      {
+        "source": "/en/workspace/**",
+        "destination": "/en/workspace/index.html"
+      },
+      {
+        "source": "/en/document-comparison",
+        "destination": "/en/document-comparison/index.html"
+      },
+      {
+        "source": "/en/document-comparison/**",
+        "destination": "/en/document-comparison/index.html"
+      },
+      {
+        "source": "/en",
+        "destination": "/en/index.html"
+      },
+      {
+        "source": "/",
+        "destination": "/en/index.html"
+      },
+      {
         "source": "**",
-        "destination": "/index.html"
+        "destination": "/404.html"
       }
     ],
     "headers": [
       {
-        "source": "**/*.@(js|css)",
+        "source": "**/*.@(js|css|png|jpg|jpeg|gif|ico|svg)",
         "headers": [
           {
             "key": "Cache-Control",
             "value": "max-age=31536000"
           }
         ]
+      },
+      {
+        "source": "**/*.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=0"
+          }
+        ]
       }
     ]
-  },
-  "functions": {
-    "source": "functions",
-    "runtime": "nodejs18"
   }
 }

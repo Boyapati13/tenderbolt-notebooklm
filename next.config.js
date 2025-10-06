@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  trailingSlash: true,
-  distDir: 'out',
   images: {
     unoptimized: true
   },
@@ -10,12 +7,6 @@ const nextConfig = {
     NEXT_PUBLIC_APP_URL: process.env.NODE_ENV === 'production' 
       ? 'https://your-project-id.web.app' 
       : 'http://localhost:3002'
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
   }
 }
 

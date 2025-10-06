@@ -6,8 +6,9 @@ import { AuthProvider } from "@/components/auth-provider";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
 import { NextAuthProvider } from "@/components/next-auth-provider";
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+// Temporarily disabled next-intl
+// import { NextIntlClientProvider } from 'next-intl';
+// import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 const inter = Inter({
@@ -57,7 +58,8 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  const messages = await getMessages();
+  // Temporarily disable i18n to test
+  // const messages = await getMessages();
 
   return (
     <html lang={locale} suppressHydrationWarning className="scroll-smooth">
@@ -93,23 +95,21 @@ export default async function LocaleLayout({
       </head>
       <body className={`${inter.variable} antialiased min-h-screen bg-background text-foreground`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <NextIntlClientProvider messages={messages}>
-            <NextAuthProvider>
-              <AuthProvider>
-                <div className="min-h-screen w-full flex">
-                  <AppSidebar />
-                  <div className="flex-1 flex flex-col min-h-screen">
-                    <AppHeader />
-                    <main className="flex-1 bg-background">
-                      <div className="animate-fade-in">
-                        {children}
-                      </div>
-                    </main>
-                  </div>
+          <NextAuthProvider>
+            <AuthProvider>
+              <div className="min-h-screen w-full flex">
+                <AppSidebar />
+                <div className="flex-1 flex flex-col min-h-screen">
+                  <AppHeader />
+                  <main className="flex-1 bg-background">
+                    <div className="animate-fade-in">
+                      {children}
+                    </div>
+                  </main>
                 </div>
-              </AuthProvider>
-            </NextAuthProvider>
-          </NextIntlClientProvider>
+              </div>
+            </AuthProvider>
+          </NextAuthProvider>
         </ThemeProvider>
       </body>
     </html>

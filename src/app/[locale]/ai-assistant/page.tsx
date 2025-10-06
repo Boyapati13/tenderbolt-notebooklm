@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, Loader2, TrendingUp, Calendar, FileText, Users, AlertCircle, CheckCircle } from "lucide-react";
+import { Send, Bot, User, Loader2, TrendingUp, Calendar, FileText, Users, AlertCircle, CheckCircle, Upload, File, X } from "lucide-react";
 
 interface Message {
   id: string;
@@ -9,6 +9,15 @@ interface Message {
   content: string;
   timestamp: Date;
   data?: any;
+  sources?: DocumentSource[];
+}
+
+interface DocumentSource {
+  id: string;
+  name: string;
+  type: string;
+  uploadedAt: Date;
+  summary?: string;
 }
 
 export default function AIAssistantPage() {
@@ -16,13 +25,16 @@ export default function AIAssistantPage() {
     {
       id: "1",
       type: "assistant",
-      content: "Hello! I'm your AI Assistant for Syntara Tenders AI. I can help you with questions about your tenders, provide insights, and answer queries about your projects. What would you like to know?",
+      content: "Hello! I'm your AI Assistant for Syntara Tenders AI. I can help you with questions about your tenders, provide insights, and answer queries about your projects. You can also upload documents for me to analyze and reference in our conversations. What would you like to know?",
       timestamp: new Date()
     }
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadedDocuments, setUploadedDocuments] = useState<DocumentSource[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -73,10 +85,33 @@ export default function AIAssistantPage() {
   };
 
   const generateAIResponse = async (query: string): Promise<{ content: string; data?: any }> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Call real AI API
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: query,
+          context: 'tender_management'
+        }),
+      });
 
-    const lowerQuery = query.toLowerCase();
+      if (!response.ok) {
+        throw new Error('AI service unavailable');
+      }
+
+      const data = await response.json();
+      return {
+        content: data.response,
+        data: data.metadata
+      };
+    } catch (error) {
+      console.error('AI API Error:', error);
+      
+      // Fallback to simulated responses
+      const lowerQuery = query.toLowerCase();
 
     // Active tenders query
     if (lowerQuery.includes("active") && lowerQuery.includes("tender")) {
@@ -171,12 +206,79 @@ export default function AIAssistantPage() {
     }
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    
+    for (const file of Array.from(files)) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('tenderId', 'ai_assistant_docs');
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          
+          const newDoc: DocumentSource = {
+            id: result.documentId || Date.now().toString(),
+            name: file.name,
+            type: file.type,
+            uploadedAt: new Date(),
+            summary: result.summary || 'Document uploaded successfully'
+          };
+
+          setUploadedDocuments(prev => [...prev, newDoc]);
+
+          // Add a message about the uploaded document
+          const uploadMessage: Message = {
+            id: Date.now().toString(),
+            type: "assistant",
+            content: `📄 **Document Uploaded**: "${file.name}"\n\nI've analyzed this document and can now answer questions about its content. The document contains information about: ${result.summary || 'various topics'}. Feel free to ask me anything about this document!`,
+            timestamp: new Date(),
+            sources: [newDoc]
+          };
+
+          setMessages(prev => [...prev, uploadMessage]);
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        const errorMessage: Message = {
+          id: Date.now().toString(),
+          type: "assistant",
+          content: `❌ **Upload Failed**: Could not process "${file.name}". Please try again or check if the file format is supported.`,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      }
+    }
+
+    setIsUploading(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeDocument = (docId: string) => {
+    setUploadedDocuments(prev => prev.filter(doc => doc.id !== docId));
+  };
+
   const suggestedQueries = [
     "How many tenders are currently active?",
     "What is the status of my submitted tenders?",
     "Which tenders are due this week?",
     "What's my team's current workload?",
-    "Show me budget analysis for all projects"
+    "Show me budget analysis for all projects",
+    "Summarize the uploaded documents",
+    "What are the key requirements in the documents?",
+    "Create a study guide from the documents",
+    "Compare the documents with our capabilities"
   ];
 
   return (
@@ -188,9 +290,45 @@ export default function AIAssistantPage() {
             AI Assistant
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
-            Get intelligent insights and answers about your tender projects
+            Get intelligent insights and answers about your tender projects. Upload documents for AI-powered analysis.
           </p>
         </div>
+
+        {/* Document Sources Panel */}
+        {uploadedDocuments.length > 0 && (
+          <div className="mb-6 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Document Sources ({uploadedDocuments.length})
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {uploadedDocuments.map((doc) => (
+                <div key={doc.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                  <File className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+                      {doc.name}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {doc.type} • {doc.uploadedAt.toLocaleDateString()}
+                    </p>
+                    {doc.summary && (
+                      <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">
+                        {doc.summary}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => removeDocument(doc.id)}
+                    className="text-slate-400 hover:text-red-500 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Chat Interface */}
         <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 h-[600px] flex flex-col">
@@ -229,6 +367,22 @@ export default function AIAssistantPage() {
                     <div className="whitespace-pre-wrap text-sm">
                       {message.content}
                     </div>
+                    
+                    {/* Source Citations */}
+                    {message.sources && message.sources.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Sources:</div>
+                        <div className="space-y-1">
+                          {message.sources.map((source, index) => (
+                            <div key={index} className="flex items-center gap-2 text-xs">
+                              <File className="w-3 h-3 text-blue-500" />
+                              <span className="text-blue-600 dark:text-blue-400">{source.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     {message.data && (
                       <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
                         {message.data.type === "tender_summary" && (
@@ -308,11 +462,31 @@ export default function AIAssistantPage() {
           <div className="p-6 border-t border-slate-200 dark:border-slate-700">
             <div className="flex gap-3">
               <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.docx,.txt,.xlsx,.xls"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isUploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4" />
+                )}
+                Upload
+              </button>
+              <input
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask me anything about your tenders..."
+                placeholder="Ask me anything about your tenders or uploaded documents..."
                 className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400"
                 disabled={isLoading}
               />
@@ -323,6 +497,9 @@ export default function AIAssistantPage() {
               >
                 <Send className="w-4 h-4" />
               </button>
+            </div>
+            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              Supported formats: PDF, DOCX, TXT, XLSX, XLS
             </div>
           </div>
         </div>

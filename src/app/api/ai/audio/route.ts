@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     console.log('🎵 Generating audio script:', { tenderId, style, interactiveMode });
 
     // Get tender data - use localhost for development
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `http://localhost:${process.env.PORT || 3000}`;
     const tenderResponse = await fetch(`${baseUrl}/api/tenders/${tenderId}`);
     const tenderData = await tenderResponse.json();
 

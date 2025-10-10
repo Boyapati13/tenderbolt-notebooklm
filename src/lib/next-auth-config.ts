@@ -105,7 +105,7 @@ export const authOptions: NextAuthOptions = {
   },
   debug: process.env.NODE_ENV === "development",
   // Add explicit URL configuration
-  url: process.env.NEXTAUTH_URL || "http://localhost:3002",
+  url: process.env.NEXTAUTH_URL || `http://localhost:${process.env.PORT || 3000}`,
   // Add trustHost for development
   trustHost: true,
   // Add event logging for debugging

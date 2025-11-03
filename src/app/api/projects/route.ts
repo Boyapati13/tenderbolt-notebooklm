@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const tenders = await prisma.tender.findMany({
+    const projects = await prisma.project.findMany({
       include: {
         stages: { orderBy: { order: "asc" } },
         documents: true,
@@ -26,9 +26,9 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    // If no tenders exist, create some mock data for demo
-    if (tenders.length === 0) {
-      const mockTender = await prisma.tender.create({
+    // If no projects exist, create some mock data for demo
+    if (projects.length === 0) {
+      const mockProject = await prisma.project.create({
         data: {
           title: "Government IT Infrastructure Modernization",
           description: "Comprehensive IT infrastructure upgrade project for federal agencies",
@@ -44,8 +44,8 @@ export async function GET() {
         },
       });
 
-      // Create additional mock tenders for better demo
-      await prisma.tender.createMany({
+      // Create additional mock projects for better demo
+      await prisma.project.createMany({
         data: [
           {
             title: "Healthcare Data Analytics Platform",
@@ -93,28 +93,28 @@ export async function GET() {
       await prisma.stage.createMany({
         data: [
           {
-            tenderId: mockTender.id,
+            projectId: mockProject.id,
             name: "Requirements Analysis",
             status: "completed",
             dueDate: "2024-01-15",
             order: 1,
           },
           {
-            tenderId: mockTender.id,
+            projectId: mockProject.id,
             name: "Proposal Development",
             status: "active",
             dueDate: "2024-02-15",
             order: 2,
           },
           {
-            tenderId: mockTender.id,
+            projectId: mockProject.id,
             name: "Technical Review",
             status: "pending",
             dueDate: "2024-03-01",
             order: 3,
           },
           {
-            tenderId: mockTender.id,
+            projectId: mockProject.id,
             name: "Final Submission",
             status: "pending",
             dueDate: "2024-03-15",
@@ -123,8 +123,8 @@ export async function GET() {
         ],
       });
 
-      // Fetch the updated tenders with stages, team members, and external links
-      const updatedTenders = await prisma.tender.findMany({
+      // Fetch the updated projects with stages, team members, and external links
+      const updatedProjects = await prisma.project.findMany({
         include: {
           stages: { orderBy: { order: "asc" } },
           documents: true,
@@ -147,14 +147,14 @@ export async function GET() {
         orderBy: { createdAt: "desc" },
       });
 
-      return NextResponse.json({ tenders: updatedTenders });
+      return NextResponse.json({ projects: updatedProjects });
     }
 
-    return NextResponse.json({ tenders });
+    return NextResponse.json({ projects });
   } catch (error) {
-    console.error("Error fetching tenders:", error);
+    console.error("Error fetching projects:", error);
     return NextResponse.json(
-      { error: "Failed to fetch tenders" },
+      { error: "Failed to fetch projects" },
       { status: 500 }
     );
   }
@@ -164,10 +164,10 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     
-    // Create tender with all fields
-    const tender = await prisma.tender.create({
+    // Create project with all fields
+    const project = await prisma.project.create({
       data: {
-        title: body.title ?? "Untitled Tender",
+        title: body.title ?? "Untitled Project",
         description: body.description ?? null,
         client: body.client ?? null,
         value: body.value ?? null,
@@ -206,11 +206,11 @@ export async function POST(req: Request) {
       },
     });
     
-    return NextResponse.json({ success: true, tender });
+    return NextResponse.json({ success: true, project });
   } catch (error) {
-    console.error("Error creating tender:", error);
+    console.error("Error creating project:", error);
     return NextResponse.json(
-      { error: "Failed to create tender" },
+      { error: "Failed to create project" },
       { status: 500 }
     );
   }

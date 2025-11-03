@@ -32,22 +32,51 @@ export default function AIAssistantPage() {
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInputValue("");
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: "assistant",
-        content: `I understand you're asking about "${inputValue}". This is a simulated response for Firebase static deployment. In a full implementation, this would connect to an AI service to provide real insights about your tender projects.`,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, assistantMessage]);
-      setIsLoading(false);
-    }, 1500);
+    const apiMessages = updatedMessages.map(({ type, content }) => ({
+        role: type,
+        content,
+    }));
+
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ messages: apiMessages }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to get response from AI');
+        }
+
+        const data = await response.json();
+
+        const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: 'assistant',
+            content: data.reply || 'Sorry, I received an empty response.',
+            timestamp: new Date(),
+        };
+
+        setMessages(prev => [...prev, assistantMessage]);
+    } catch (error: any) {
+        const errorMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: 'assistant',
+            content: `Sorry, something went wrong. ${error.message}`,
+            timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, errorMessage]);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -141,15 +170,6 @@ export default function AIAssistantPage() {
               Send
             </button>
           </div>
-        </div>
-
-        {/* Info Panel */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-blue-900 mb-2">Firebase Static Deployment</h3>
-          <p className="text-sm text-blue-700">
-            This is a simplified version of the AI Assistant optimized for Firebase static hosting. 
-            In production, this would connect to real AI services for comprehensive tender analysis.
-          </p>
         </div>
       </div>
     </div>

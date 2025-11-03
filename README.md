@@ -1,13 +1,13 @@
-# Syntara Tenders AI
+# Handson-AI Project AI management platform
 
-A complete tender management platform with AI integration, multi-language support, and comprehensive features for managing tenders, documents, and business processes.
+A complete project management platform with AI integration, multi-language support, and comprehensive features for managing projects, documents, and business processes.
 
 ## 🚀 Features
 
 - **AI-Powered Analysis**: Google Gemini AI integration for document processing and analysis
 - **Multi-Language Support**: 8 languages (English, Spanish, French, German, Arabic, Chinese, Japanese, Korean)
-- **Document Management**: Upload, process, and analyze tender documents
-- **Real-time Chat**: AI assistant for tender-related queries
+- **Document Management**: Upload, process, and analyze project documents
+- **Real-time Chat**: AI assistant for project-related queries
 - **Dashboard & Analytics**: Comprehensive insights and reporting
 - **Authentication**: Secure user authentication with NextAuth.js
 - **Responsive Design**: Mobile-friendly interface with dark/light themes
@@ -48,8 +48,8 @@ src/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Boyapati13/tenderbolt-notebooklm.git
-   cd tenderbolt-notebooklm
+   git clone https://github.com/Boyapati13/Handson-noteBook.git
+   cd Handson-noteBook
    ```
 
 2. **Install dependencies**
@@ -117,8 +117,8 @@ npm run electron-pack
 ### Docker
 
 ```bash
-docker build -t syntara-tenders-ai .
-docker run -p 3000:3000 syntara-tenders-ai
+docker build -t handson-ai .
+docker run -p 3000:3000 handson-ai
 ```
 
 ## 📚 Documentation
@@ -152,4 +152,4 @@ For support, email boyapatisivaramakrishna@gmail.com or create an issue in this 
 
 ---
 
-**Syntara Tenders AI** - Revolutionizing tender management with AI intelligence.
+**Handson-AI Project AI management platform** - Revolutionizing project management with AI intelligence.

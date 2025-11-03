@@ -1,20 +1,7 @@
-"use client";
+import { redirect } from 'next/navigation';
 
-import { useParams } from 'next/navigation';
-import { CRMDashboard } from "@/components/crm-dashboard";
-
-export default function Dashboard() {
-  const params = useParams();
-  const locale = params.locale as string || 'en';
-
-  const handleProjectClick = (tenderId: string) => {
-    // Navigate to workspace route with proper locale
-    window.location.href = `/${locale}/workspace/${tenderId}`;
-  };
-
-  return (
-    <CRMDashboard onProjectClick={handleProjectClick} />
-  );
+export default function DashboardPage() {
+  // This is a temporary redirect until the dashboard is built.
+  // Replace this with your actual dashboard component.
+  redirect('/w/your-workspace-id');
 }
-
-

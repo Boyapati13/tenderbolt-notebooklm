@@ -5,6 +5,7 @@ services:
     build: .
     ports:
       - "3000:3000"
+    image: handson-ai
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:password@db:5432/tenders
@@ -65,4 +66,4 @@ volumes:
 
 networks:
   default:
-    name: tenders-network
+    name: handson-ai-network

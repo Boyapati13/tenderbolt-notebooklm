@@ -1,277 +1,140 @@
 "use client";
 
 import { useState } from "react";
-import { X, Plus, Calendar, DollarSign, User, Tag, Link as LinkIcon } from "lucide-react";
+import { DollarSign, Calendar, X } from "lucide-react";
 
 type NewTenderModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onTenderCreated: () => void;
 };
 
-export function NewTenderModal({ isOpen, onClose, onSuccess }: NewTenderModalProps) {
+export function NewTenderModal({ isOpen, onClose, onTenderCreated }: NewTenderModalProps) {
+  const [title, setTitle] = useState("");
+  const [value, setValue] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    client: "",
-    value: "",
-    deadline: "",
-    status: "discovery",
-    priority: "medium",
-    tags: "",
-    oneDriveLink: "",
-    googleDriveLink: "",
-  });
-
-  if (!isOpen) return null;
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
       const response = await fetch("/api/tenders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
-          value: formData.value ? parseInt(formData.value) : undefined,
-          deadline: formData.deadline || undefined,
-          organizationId: "org_demo",
+          title,
+          value: parseFloat(value) || 0,
+          deadline,
         }),
       });
 
-      if (response.ok) {
-        onSuccess();
-        handleClose();
-      } else {
-        alert("Failed to create tender");
+      if (!response.ok) {
+        throw new Error("Failed to create tender");
       }
-    } catch (error) {
-      console.error("Error creating tender:", error);
-      alert("Error creating tender");
+
+      onTenderCreated();
+      onClose();
+      // Reset form
+      setTitle("");
+      setValue("");
+      setDeadline("");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleClose = () => {
-    setFormData({
-      title: "",
-      description: "",
-      client: "",
-      value: "",
-      deadline: "",
-      status: "discovery",
-      priority: "medium",
-      tags: "",
-      oneDriveLink: "",
-      googleDriveLink: "",
-    });
-    onClose();
-  };
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-card z-10">
-          <h2 className="text-2xl font-bold text-heading text-foreground">Create New Project</h2>
-          <button
-            onClick={handleClose}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors"
-          >
-            <X size={20} />
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">New Tender</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
+            <X size={24} />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-semibold text-card-foreground mb-2">
-              Project Title *
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="e.g., Government IT Infrastructure Modernization"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span className="block sm:inline">{error}</span>
           </div>
+        )}
 
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-semibold text-card-foreground mb-2">
-              Description
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Brief description of the project..."
-              rows={3}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Client and Value */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-card-foreground mb-2">
-                <User size={16} className="inline mr-1" />
-                Client Name
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                Tender Title
               </label>
               <input
+                id="title"
                 type="text"
-                value={formData.client}
-                onChange={(e) => setFormData({ ...formData, client: e.target.value })}
-                placeholder="e.g., Department of Technology"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-card-foreground mb-2">
-                <DollarSign size={16} className="inline mr-1" />
-                Project Value ($)
-              </label>
-              <input
-                type="number"
-                value={formData.value}
-                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                placeholder="e.g., 2500000"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="value" className="block text-sm font-medium text-gray-700 mb-1">
+                  Value
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <DollarSign className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="value"
+                    type="number"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-1">
+                  Deadline
+                </label>
+                <div className="relative">
+                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <Calendar className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="deadline"
+                    type="date"
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Status and Priority */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-card-foreground mb-2">
-                Stage
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-card"
-              >
-                <option value="discovery">Discovery</option>
-                <option value="interested">Interested</option>
-                <option value="working">Working</option>
-                <option value="submitted">Submitted</option>
-                <option value="closed">Closed</option>
-                <option value="not_interested">Not Interested</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-card-foreground mb-2">
-                Priority
-              </label>
-              <select
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-card"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Deadline */}
-          <div>
-            <label className="block text-sm font-semibold text-card-foreground mb-2">
-              <Calendar size={16} className="inline mr-1" />
-              Deadline
-            </label>
-            <input
-              type="date"
-              value={formData.deadline}
-              onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Tags */}
-          <div>
-            <label className="block text-sm font-semibold text-card-foreground mb-2">
-              <Tag size={16} className="inline mr-1" />
-              Tags (comma-separated)
-            </label>
-            <input
-              type="text"
-              value={formData.tags}
-              onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-              placeholder="e.g., IT, Infrastructure, Government"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* External Links */}
-          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-semibold text-card-foreground">
-              <LinkIcon size={16} className="inline mr-1" />
-              External Resources (Optional)
-            </h3>
-            
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
-                OneDrive Folder URL
-              </label>
-              <input
-                type="url"
-                value={formData.oneDriveLink}
-                onChange={(e) => setFormData({ ...formData, oneDriveLink: e.target.value })}
-                placeholder="https://onedrive.live.com/..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
-                Google Drive Folder URL
-              </label>
-              <input
-                type="url"
-                value={formData.googleDriveLink}
-                onChange={(e) => setFormData({ ...formData, googleDriveLink: e.target.value })}
-                placeholder="https://drive.google.com/..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+          <div className="mt-6 flex justify-end space-x-3">
             <button
               type="button"
-              onClick={handleClose}
-              className="px-6 py-3 border-2 border-gray-300 text-card-foreground rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Plus size={16} />
-                  Create Project
-                </>
-              )}
+              {isSubmitting ? "Creating..." : "Create Tender"}
             </button>
           </div>
         </form>
@@ -279,4 +142,3 @@ export function NewTenderModal({ isOpen, onClose, onSuccess }: NewTenderModalPro
     </div>
   );
 }
-

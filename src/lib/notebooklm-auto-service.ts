@@ -1,3 +1,4 @@
+
 import { aiService } from './ai-service';
 import { prisma } from './prisma';
 
@@ -75,7 +76,7 @@ export class NotebookLMAutoService {
     
     const document = await prisma.document.findUnique({
       where: { id: documentId },
-      include: { tender: true }
+      include: { project: true }
     });
 
     if (!document) {
@@ -91,7 +92,7 @@ DOCUMENT METADATA:
 - Filename: ${document.filename}
 - Type: ${document.documentType}
 - Category: ${document.category}
-- Tender: ${document.tender?.title || 'N/A'}
+- Project: ${document.project?.title || 'N/A'}
 
 Please provide a comprehensive analysis in this EXACT JSON format:
 
@@ -155,13 +156,13 @@ Please provide a comprehensive analysis in this EXACT JSON format:
 CRITICAL RULES:
 - Provide realistic confidence scores (0-1)
 - Generate practical, actionable insights
-- Focus on tender/procurement context
+- Focus on project/procurement context
 - Ensure all arrays have meaningful content
 - Be specific and detailed in recommendations
-- Consider the document's role in tender evaluation`;
+- Consider the document's role in project evaluation`;
 
     try {
-      const response = await aiService.callAI(analysisPrompt, 'You are an expert document analyst specializing in tender and procurement documents. Provide comprehensive, accurate analysis.');
+      const response = await aiService.callAI(analysisPrompt, 'You are an expert document analyst specializing in project and procurement documents. Provide comprehensive, accurate analysis.');
       
       let jsonText = response.trim();
       if (jsonText.startsWith('```')) {
@@ -183,30 +184,30 @@ CRITICAL RULES:
   }
 
   /**
-   * Auto-generate insights for a tender based on all documents
+   * Auto-generate insights for a project based on all documents
    */
-  async generateTenderInsights(tenderId: string): Promise<any> {
-    console.log('💡 Generating auto insights for tender:', tenderId);
+  async generateProjectInsights(projectId: string): Promise<any> {
+    console.log('💡 Generating auto insights for project:', projectId);
     
-    const tender = await prisma.tender.findUnique({
-      where: { id: tenderId },
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
       include: { documents: true }
     });
 
-    if (!tender) {
-      throw new Error('Tender not found');
+    if (!project) {
+      throw new Error('Project not found');
     }
 
-    const documents = tender.documents;
+    const documents = project.documents;
     const documentSummaries = documents.map(doc => 
       `${doc.filename} (${doc.documentType}): ${doc.text.substring(0, 1000)}...`
     ).join('\n\n');
 
-    const insightsPrompt = `Generate comprehensive auto insights for this tender based on all uploaded documents:
+    const insightsPrompt = `Generate comprehensive auto insights for this project based on all uploaded documents:
 
-TENDER: ${tender.title}
-BUDGET: $${tender.budget?.toLocaleString() || 'TBD'}
-DEADLINE: ${tender.deadline ? new Date(tender.deadline).toLocaleDateString() : 'TBD'}
+PROJECT: ${project.title}
+BUDGET: $${project.budget?.toLocaleString() || 'TBD'}
+DEADLINE: ${project.deadline ? new Date(project.deadline).toLocaleDateString() : 'TBD'}
 
 DOCUMENTS (${documents.length} total):
 ${documentSummaries}
@@ -231,10 +232,10 @@ Generate insights in this EXACT JSON format:
   "financialConsiderations": ["consideration1", "consideration2"]
 }
 
-Focus on actionable insights that help with tender evaluation and preparation.`;
+Focus on actionable insights that help with project evaluation and preparation.`;
 
     try {
-      const response = await aiService.callAI(insightsPrompt, 'You are an expert tender analyst. Provide strategic insights for tender evaluation and preparation.');
+      const response = await aiService.callAI(insightsPrompt, 'You are an expert project analyst. Provide strategic insights for project evaluation and preparation.');
       
       let jsonText = response.trim();
       if (jsonText.startsWith('```')) {
@@ -244,15 +245,15 @@ Focus on actionable insights that help with tender evaluation and preparation.`;
       const insights = JSON.parse(jsonText);
       
       // Store insights in database
-      await prisma.tender.update({
-        where: { id: tenderId },
+      await prisma.project.update({
+        where: { id: projectId },
         data: {
           autoInsights: JSON.stringify(insights),
           updatedAt: new Date()
         }
       });
       
-      console.log('✅ Auto insights generated for tender:', tenderId);
+      console.log('✅ Auto insights generated for project:', projectId);
       return insights;
       
     } catch (error) {
@@ -275,7 +276,7 @@ Focus on actionable insights that help with tender evaluation and preparation.`;
       throw new Error('Document not found');
     }
 
-    const questionsPrompt = `Generate 5-10 thoughtful questions for reviewing this document in a tender context:
+    const questionsPrompt = `Generate 5-10 thoughtful questions for reviewing this document in a project context:
 
 DOCUMENT: ${document.filename}
 CONTENT: ${document.text.substring(0, 2000)}...
@@ -291,7 +292,7 @@ Return as a JSON array of strings:
 ["question1", "question2", "question3", "question4", "question5"]`;
 
     try {
-      const response = await aiService.callAI(questionsPrompt, 'You are an expert tender reviewer. Generate insightful questions for document analysis.');
+      const response = await aiService.callAI(questionsPrompt, 'You are an expert project reviewer. Generate insightful questions for document analysis.');
       
       let jsonText = response.trim();
       if (jsonText.startsWith('```')) {
@@ -329,7 +330,7 @@ Return as a JSON array of strings:
       throw new Error('Document not found');
     }
 
-    const taggingPrompt = `Auto-tag and categorize this document for tender management:
+    const taggingPrompt = `Auto-tag and categorize this document for project management:
 
 DOCUMENT: ${document.filename}
 CONTENT: ${document.text.substring(0, 1500)}...
@@ -348,10 +349,10 @@ Generate tags in this EXACT JSON format:
   "confidence": 0.90
 }
 
-Focus on tender/procurement context and practical categorization.`;
+Focus on project/procurement context and practical categorization.`;
 
     try {
-      const response = await aiService.callAI(taggingPrompt, 'You are an expert document classifier specializing in tender and procurement documents.');
+      const response = await aiService.callAI(taggingPrompt, 'You are an expert document classifier specializing in project and procurement documents.');
       
       let jsonText = response.trim();
       if (jsonText.startsWith('```')) {
@@ -376,7 +377,7 @@ Focus on tender/procurement context and practical categorization.`;
       console.error('❌ Auto tagging error:', error);
       return {
         categories: ['general'],
-        keywords: ['tender', 'document'],
+        keywords: ['project', 'document'],
         themes: ['procurement'],
         industries: ['general'],
         priority: 'medium',
@@ -402,7 +403,7 @@ Focus on tender/procurement context and practical categorization.`;
       throw new Error('Document not found');
     }
 
-    const validationPrompt = `Validate this document for tender submission quality:
+    const validationPrompt = `Validate this document for project submission quality:
 
 DOCUMENT: ${document.filename}
 CONTENT: ${document.text.substring(0, 2000)}...
@@ -442,10 +443,10 @@ Provide validation in this EXACT JSON format:
   }
 }
 
-Focus on tender submission requirements and best practices.`;
+Focus on project submission requirements and best practices.`;
 
     try {
-      const response = await aiService.callAI(validationPrompt, 'You are an expert tender document validator. Assess document quality for submission.');
+      const response = await aiService.callAI(validationPrompt, 'You are an expert project document validator. Assess document quality for submission.');
       
       let jsonText = response.trim();
       if (jsonText.startsWith('```')) {
@@ -503,7 +504,7 @@ Focus on tender submission requirements and best practices.`;
         return null;
       }
 
-      return JSON.parse(document.autoAnalysis);
+      return JSON.parse(document.autoAnalysis as string);
     } catch (error) {
       console.error('❌ Error retrieving analysis:', error);
       return null;
@@ -511,20 +512,20 @@ Focus on tender submission requirements and best practices.`;
   }
 
   /**
-   * Get tender insights
+   * Get project insights
    */
-  async getTenderInsights(tenderId: string): Promise<any | null> {
+  async getProjectInsights(projectId: string): Promise<any | null> {
     try {
-      const tender = await prisma.tender.findUnique({
-        where: { id: tenderId },
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
         select: { autoInsights: true }
       });
 
-      if (!tender || !tender.autoInsights) {
+      if (!project || !project.autoInsights) {
         return null;
       }
 
-      return JSON.parse(tender.autoInsights);
+      return JSON.parse(project.autoInsights as string);
     } catch (error) {
       console.error('❌ Error retrieving insights:', error);
       return null;

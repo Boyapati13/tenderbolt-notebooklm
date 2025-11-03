@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Plus, Building2, Upload, Trash2, Brain, Download, Search, Filter, Eye, Calendar, FileText, AlertCircle, CheckCircle, Clock } from "lucide-react";
 
 type Document = {
@@ -20,7 +20,7 @@ export default function CompanyDocumentsPage() {
   const [filterType, setFilterType] = useState("all");
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const inputRef = useState<HTMLInputElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -46,6 +46,7 @@ export default function CompanyDocumentsPage() {
       form.append("files", f);
     }
     form.append("tenderId", "global_documents");
+    form.append("category", "company"); // FIX: Added category
     
     try {
       const response = await fetch("/api/upload", { method: "POST", body: form });

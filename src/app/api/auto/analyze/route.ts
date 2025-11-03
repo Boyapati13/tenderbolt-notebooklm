@@ -3,11 +3,11 @@ import { notebookLMAutoService } from '@/lib/notebooklm-auto-service';
 
 export async function POST(request: NextRequest) {
   try {
-    const { documentId, tenderId, type } = await request.json();
+    const { documentId, projectId, type } = await request.json();
 
-    if (!documentId && !tenderId) {
+    if (!documentId && !projectId) {
       return NextResponse.json(
-        { error: 'Document ID or Tender ID is required' },
+        { error: 'Document ID or Project ID is required' },
         { status: 400 }
       );
     }
@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
     if (type === 'document' && documentId) {
       console.log('🔍 Starting document auto analysis...');
       result = await notebookLMAutoService.analyzeDocument(documentId);
-    } else if (type === 'tender' && tenderId) {
-      console.log('💡 Starting tender auto insights...');
-      result = await notebookLMAutoService.generateTenderInsights(tenderId);
+    } else if (type === 'project' && projectId) {
+      console.log('💡 Starting project auto insights...');
+      result = await notebookLMAutoService.generateProjectInsights(projectId);
     } else if (type === 'questions' && documentId) {
       console.log('❓ Generating auto questions...');
       result = await notebookLMAutoService.generateAutoQuestions(documentId);
@@ -59,12 +59,12 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const documentId = searchParams.get('documentId');
-    const tenderId = searchParams.get('tenderId');
+    const projectId = searchParams.get('projectId');
     const type = searchParams.get('type');
 
-    if (!documentId && !tenderId) {
+    if (!documentId && !projectId) {
       return NextResponse.json(
-        { error: 'Document ID or Tender ID is required' },
+        { error: 'Document ID or Project ID is required' },
         { status: 400 }
       );
     }
@@ -73,8 +73,8 @@ export async function GET(request: NextRequest) {
 
     if (type === 'document' && documentId) {
       result = await notebookLMAutoService.getDocumentAnalysis(documentId);
-    } else if (type === 'tender' && tenderId) {
-      result = await notebookLMAutoService.getTenderInsights(tenderId);
+    } else if (type === 'project' && projectId) {
+      result = await notebookLMAutoService.getProjectInsights(projectId);
     } else {
       return NextResponse.json(
         { error: 'Invalid type or missing parameters' },

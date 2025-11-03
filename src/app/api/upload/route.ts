@@ -19,7 +19,6 @@ async function extractWithGeminiFileAPI(buffer: Buffer, filename: string, mimeTy
   }
   
   try {
-    // Create temporary file
     const tempPath = join(tmpdir(), `temp_${Date.now()}_${filename}`);
     writeFileSync(tempPath, buffer);
     
@@ -32,9 +31,8 @@ async function extractWithGeminiFileAPI(buffer: Buffer, filename: string, mimeTy
     
     console.log(`✅ File uploaded to Gemini: ${uploadResult.file.uri}`);
     
-    // Use Gemini to extract text (works with PDFs, scanned PDFs, images, etc.)
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const isPDF = filename.toLowerCase().endsWith('.pdf');
     const extractionPrompt = isPDF 
@@ -55,7 +53,6 @@ async function extractWithGeminiFileAPI(buffer: Buffer, filename: string, mimeTy
     const extractedText = result.response.text();
     console.log(`✅ Text extracted via Gemini! ${extractedText.length} characters`);
     
-    // Clean up temp file
     try {
       unlinkSync(tempPath);
     } catch {
@@ -73,177 +70,166 @@ async function extractWithGeminiFileAPI(buffer: Buffer, filename: string, mimeTy
 }
 
 export async function POST(req: Request) {
-  const form = await req.formData();
-  const files = form.getAll("files");
-  const tenderId = form.get("tenderId") as string || "tender_default";
-  const saved: Array<{ id: string; name: string; cloudUrl?: string }> = [];
-  
-  for (const f of files) {
-    if (typeof f === "object" && "arrayBuffer" in f) {
-      const file = f as File;
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      let text = await extractTextFromFile(file.name, file.type, bytes);
-      
-      // For PDFs (including scanned), use Gemini File API for text extraction
-      if (file.name.toLowerCase().endsWith('.pdf') && text.includes('[PDF uploaded successfully')) {
-        console.log("🤖 Using Gemini File API for PDF text extraction (supports scanned PDFs)...");
-        text = await extractWithGeminiFileAPI(buffer, file.name, file.type);
-      }
-      // For other files that failed standard extraction, try Gemini as fallback
-      else if (text.length < 50 && file.size > 1000) {
-        console.log("🤖 Standard extraction yielded little text, trying Gemini File API...");
-        text = await extractWithGeminiFileAPI(buffer, file.name, file.type);
-      }
-      
-      // Upload to Google Cloud Storage (if configured)
-      let cloudUrl: string | undefined;
-      try {
-        const uploadResult = await uploadFileToCloud(
-          file.name,
-          buffer,
-          tenderId,
-          file.type || "application/octet-stream"
-        );
+  try {
+    const form = await req.formData();
+    const files = form.getAll("files");
+    const tenderId = (form.get("projectId") as string) || (form.get("tenderId") as string) || "tender_default";
+    const saved: Array<{ id: string; name: string; cloudUrl?: string }> = [];
+    
+    for (const f of files) {
+      if (typeof f === "object" && "arrayBuffer" in f) {
+        const file = f as File;
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        let text = await extractTextFromFile(file.name, file.type, bytes);
         
-        if (uploadResult.success) {
-          cloudUrl = uploadResult.publicUrl;
-          console.log(`✅ File uploaded to Google Cloud: ${file.name}`);
-        } else {
-          console.warn(`⚠️  Google Cloud upload failed: ${uploadResult.error}`);
+        if (file.name.toLowerCase().endsWith('.pdf') && text.includes('[PDF uploaded successfully')) {
+          console.log("🤖 Using Gemini File API for PDF text extraction (supports scanned PDFs)...");
+          text = await extractWithGeminiFileAPI(buffer, file.name, file.type);
         }
-      } catch (error) {
-        console.error("Google Cloud upload error:", error);
-      }
-      
-      // Determine document category based on filename
-      const category = determineDocumentCategory(file.name);
-      const documentType = determineDocumentType(file.name);
-      
-      console.log(`📋 Document category: ${category}, type: ${documentType}`);
-      
-      // Auto-generate summary for tender documents
-      let summary: string | undefined;
-      if (category === 'tender' && text.length > 100) {
-        console.log("📝 Generating automatic summary...");
-        summary = await autoExtractService.generateSummary(text, file.name);
-      }
-      
-      // Save document to database
-      // Supporting & Company documents are global (use special "global" tender ID)
-      // Tender documents are specific to each tender
-      const effectiveTenderId = (category === 'supporting' || category === 'company') 
-        ? 'global_documents' 
-        : tenderId;
-      
-      const doc = await prisma.document.create({
-        data: {
-          filename: file.name,
-          mimeType: file.type || "application/octet-stream",
-          sizeBytes: file.size || 0,
-          text,
-          googleCloudUrl: cloudUrl,
-          category,
-          documentType,
-          summary,
-          tender: {
-            connectOrCreate: {
-              where: { id: effectiveTenderId },
-              create: {
-                id: effectiveTenderId,
-                title: effectiveTenderId === 'global_documents' ? "Global Documents Library" : "Default Tender",
-                organization: {
-                  connectOrCreate: {
-                    where: { id: "org_demo" },
-                    create: { id: "org_demo", name: "Demo Company Ltd" },
+        else if (text.length < 50 && file.size > 1000) {
+          console.log("🤖 Standard extraction yielded little text, trying Gemini File API...");
+          text = await extractWithGeminiFileAPI(buffer, file.name, file.type);
+        }
+        
+        let cloudUrl: string | undefined;
+        try {
+          const uploadResult = await uploadFileToCloud(
+            file.name,
+            buffer,
+            tenderId,
+            file.type || "application/octet-stream"
+          );
+          
+          if (uploadResult.success) {
+            cloudUrl = uploadResult.publicUrl;
+            console.log(`✅ File uploaded to Google Cloud: ${file.name}`);
+          } else {
+            console.warn(`⚠️  Google Cloud upload failed: ${uploadResult.error}`);
+          }
+        } catch (error) {
+          console.error("Google Cloud upload error:", error);
+        }
+        
+        const category = determineDocumentCategory(file.name);
+        const documentType = determineDocumentType(file.name);
+        
+        console.log(`📋 Document category: ${category}, type: ${documentType}`);
+        
+        let summary: string | undefined;
+        if (category === 'tender' && text.length > 100) {
+          console.log("📝 Generating automatic summary...");
+          summary = await autoExtractService.generateSummary(text, file.name);
+        }
+        
+        const effectiveTenderId = (category === 'supporting' || category === 'company') 
+          ? 'global_documents' 
+          : tenderId;
+        
+        const doc = await prisma.document.create({
+          data: {
+            filename: file.name,
+            mimeType: file.type || "application/octet-stream",
+            sizeBytes: file.size || 0,
+            text,
+            googleCloudUrl: cloudUrl,
+            category,
+            documentType,
+            summary,
+            tender: {
+              connectOrCreate: {
+                where: { id: effectiveTenderId },
+                create: {
+                  id: effectiveTenderId,
+                  title: effectiveTenderId === 'global_documents' ? "Global Documents Library" : "Default Tender",
+                  organization: {
+                    connectOrCreate: {
+                      where: { id: "org_demo" },
+                      create: { id: "org_demo", name: "Demo Company Ltd" },
+                    },
                   },
                 },
               },
             },
           },
-        },
-      });
-      
-      // For tender documents, auto-extract metadata and update tender
-      if (category === 'tender' && text.length > 100) {
-        console.log("🔍 Auto-extracting tender metadata...");
-        const metadata = await autoExtractService.extractTenderMetadata(text);
+        });
         
-        if (Object.keys(metadata).length > 0) {
-          await autoExtractService.updateTenderWithMetadata(tenderId, metadata);
+        if (category === 'tender' && text.length > 100) {
+          console.log("🔍 Auto-extracting tender metadata...");
+          const metadata = await autoExtractService.extractTenderMetadata(text);
           
-          // Calculate winning capabilities if we have requirements
-          if (metadata.requirements && metadata.requirements.length > 0) {
-            console.log("🎯 Calculating winning capabilities...");
-            const capabilities = await autoExtractService.calculateWinningCapabilities(tenderId, metadata.requirements);
+          if (Object.keys(metadata).length > 0) {
+            await autoExtractService.updateTenderWithMetadata(tenderId, metadata);
             
-            // Perform gap analysis
-            console.log("📊 Performing gap analysis...");
-            const gapAnalysis = await autoExtractService.performGapAnalysis(tenderId, metadata.requirements);
-            
-            // Update tender with calculated capabilities
-            await prisma.tender.update({
-              where: { id: tenderId },
-              data: { 
-                gapAnalysis,
-                winProbability: capabilities.winningProbability,
+            if (metadata.requirements && metadata.requirements.length > 0) {
+              console.log("🎯 Calculating winning capabilities...");
+              const capabilities = await autoExtractService.calculateWinningCapabilities(tenderId, metadata.requirements);
+              
+              console.log("📊 Performing gap analysis...");
+              const gapAnalysis = await autoExtractService.performGapAnalysis(tenderId, metadata.requirements);
+              
+              await prisma.tender.update({
+                where: { id: tenderId },
+                data: { 
+                  gapAnalysis,
+                  winProbability: capabilities.winningProbability,
+                  capabilityScore: capabilities.capabilityScore,
+                  matchedRequirements: capabilities.matchedRequirements,
+                  totalRequirements: capabilities.totalRequirements,
+                  strengths: JSON.stringify(capabilities.strengths),
+                  weaknesses: JSON.stringify(capabilities.weaknesses),
+                  recommendations: JSON.stringify(capabilities.recommendations)
+                }
+              });
+              
+              console.log("✅ Tender updated with calculated capabilities:", {
+                winningProbability: capabilities.winningProbability,
                 capabilityScore: capabilities.capabilityScore,
                 matchedRequirements: capabilities.matchedRequirements,
-                totalRequirements: capabilities.totalRequirements,
-                strengths: JSON.stringify(capabilities.strengths),
-                weaknesses: JSON.stringify(capabilities.weaknesses),
-                recommendations: JSON.stringify(capabilities.recommendations)
-              }
-            });
+                totalRequirements: capabilities.totalRequirements
+              });
+            }
             
-            console.log("✅ Tender updated with calculated capabilities:", {
-              winningProbability: capabilities.winningProbability,
-              capabilityScore: capabilities.capabilityScore,
-              matchedRequirements: capabilities.matchedRequirements,
-              totalRequirements: capabilities.totalRequirements
-            });
+            console.log("✅ Tender metadata updated successfully");
           }
           
-          console.log("✅ Tender metadata updated successfully");
+          if (summary) {
+            console.log("💬 Posting summary to chat...");
+            await prisma.message.create({
+              data: {
+                tenderId,
+                role: "assistant",
+                content: `## 📄 Document Summary: ${file.name}\n\n${summary}\n\n---\n*This summary was automatically generated after uploading the document.*`
+              }
+            });
+            console.log("✅ Summary posted to chat");
+          }
         }
         
-        // Post summary as an AI message in chat
-        if (summary) {
-          console.log("💬 Posting summary to chat...");
-          await prisma.message.create({
-            data: {
-              tenderId,
-              role: "assistant",
-              content: `## 📄 Document Summary: ${file.name}\n\n${summary}\n\n---\n*This summary was automatically generated after uploading the document.*`
-            }
-          });
-          console.log("✅ Summary posted to chat");
-        }
+        const insights = extractInsightsFromText(text, doc.id, file.name);
+        await saveInsightsToDatabase(insights, tenderId);
+        
+        saved.push({ 
+          id: doc.id, 
+          name: file.name,
+          cloudUrl
+        });
       }
-      
-      // Extract insights from the document text
-      const insights = extractInsightsFromText(text, doc.id, file.name);
-      await saveInsightsToDatabase(insights, tenderId);
-      
-      saved.push({ 
-        id: doc.id, 
-        name: file.name,
-        cloudUrl,
-        category,
-        summary: summary?.substring(0, 200)
-      });
     }
+    
+    console.log(`✅ Upload complete! ${saved.length} file(s) processed`);
+    return NextResponse.json({ ok: true, documents: saved });
+
+  } catch (error) {
+    console.error("❌ Upload API Error:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during upload.";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-  
-  console.log(`✅ Upload complete! ${saved.length} file(s) processed`);
-  return NextResponse.json({ ok: true, saved });
 }
 
-// Helper functions to categorize documents
 function determineDocumentCategory(filename: string): string {
   const lower = filename.toLowerCase();
   
-  // Supporting Documents - Certificates, registrations, compliance, audits
   if (
     lower.includes('registration') || 
     lower.includes('certificate') || 
@@ -265,7 +251,6 @@ function determineDocumentCategory(filename: string): string {
     return 'supporting';
   }
   
-  // Company Documents - Profiles, capabilities, portfolios, proposals, offers
   if (
     lower.includes('company') || 
     lower.includes('profile') || 
@@ -290,7 +275,6 @@ function determineDocumentCategory(filename: string): string {
     return 'company';
   }
   
-  // Tender Documents - RFQs, RFPs, requirements (original tender documents)
   if (
     lower.includes('rfq') || 
     lower.includes('rfp') || 
@@ -307,13 +291,12 @@ function determineDocumentCategory(filename: string): string {
     return 'tender';
   }
   
-  return 'company'; // Default to company category for uploaded documents
+  return 'tender';
 }
 
 function determineDocumentType(filename: string): string {
   const lower = filename.toLowerCase();
   
-  // Supporting Documents
   if (lower.includes('iso')) return 'ISO Certificate';
   if (lower.includes('registration')) return 'Company Registration';
   if (lower.includes('audit')) return 'Audit Report';
@@ -330,7 +313,6 @@ function determineDocumentType(filename: string): string {
   if (lower.includes('bank')) return 'Bank Statement';
   if (lower.includes('certificate') || lower.includes('cert')) return 'Certificate';
   
-  // Company Documents
   if (lower.includes('profile')) return 'Company Profile';
   if (lower.includes('capability') || lower.includes('capabilities')) return 'Capabilities Statement';
   if (lower.includes('portfolio')) return 'Portfolio';
@@ -339,7 +321,6 @@ function determineDocumentType(filename: string): string {
   if (lower.includes('brochure')) return 'Company Brochure';
   if (lower.includes('presentation')) return 'Presentation';
   
-  // Tender Documents
   if (lower.includes('rfq')) return 'Request for Quotation';
   if (lower.includes('rfp')) return 'Request for Proposal';
   if (lower.includes('tender')) return 'Tender Document';
@@ -352,5 +333,3 @@ function determineDocumentType(filename: string): string {
   
   return 'General Document';
 }
-
-

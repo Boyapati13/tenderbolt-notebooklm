@@ -1,5 +1,4 @@
 # Handson-AI Project AI management platform
-
 A complete project management platform with AI integration, multi-language support, and comprehensive features for managing projects, documents, and business processes.
 
 ## 🚀 Features
@@ -40,7 +39,7 @@ src/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - Google Gemini API key (optional)
 
@@ -48,8 +47,8 @@ src/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Boyapati13/Handson-noteBook.git
-   cd Handson-noteBook
+   git clone https://github.com/Boyapati13/HandsOnAi.git
+   cd HandsOnAi
    ```
 
 2. **Install dependencies**
@@ -61,7 +60,6 @@ src/
    ```bash
    cp env.example .env.local
    ```
-   
    Edit `.env.local` with your configuration:
    ```env
    NODE_ENV=development
@@ -83,13 +81,12 @@ src/
    npm run dev
    ```
 
-6. **Open your browser**
-   Navigate to [http://localhost:3002](http://localhost:3002)
+6. **Open your browser** Navigate to http://localhost:3002/
 
 ## 🌐 Supported Languages
 
 - English (en)
-- Spanish (es) 
+- Spanish (es)
 - French (fr)
 - German (de)
 - Arabic (ar)

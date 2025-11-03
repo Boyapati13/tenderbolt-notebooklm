@@ -4,14 +4,11 @@ import { SessionProvider } from '@/components/session-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 import './globals.css';
-
 const inter = Inter({ subsets: ['latin'] });
-
 export const metadata = {
-  title: 'TenderBolt',
-  description: 'TenderBolt - Your AI-powered tendering co-pilot',
+  title: 'HandsOn Ai',
+  description: 'HandsOn Ai - Your AI-powered tendering co-pilot',
 };
-
 export default function RootLayout({
   children,
 }: {

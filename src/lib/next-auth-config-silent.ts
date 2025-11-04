@@ -105,7 +105,7 @@ export const authOptionsSilent: NextAuthOptions = {
   // Completely disable debug mode
   debug: false,
   // Add explicit URL configuration
-  url: process.env.NEXTAUTH_URL || "http://localhost:3002",
+  url: process.env.NEXTAUTH_URL || `http://localhost:${process.env.PORT || 3000}`,
   // Add trustHost for development
   trustHost: true,
   // Disable all automatic refetching

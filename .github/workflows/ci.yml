@@ -2,9 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    # Run on any branch push so CI can validate build from feature branches too
+    branches: [ '**' ]
   pull_request:
-    branches: [ main ]
+    # Run for pull requests targeting any branch
+    branches: [ '**' ]
 
 jobs:
   build:

@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import "../globals.css";
+import ClientMotionLoader from "@/components/client-motion-loader";
+
+import "@/styles/design-tokens.css";
+import "@/styles/globals.css";
+import "@/styles/components.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -21,7 +25,7 @@ const inter = Inter({
 const locales = ['en', 'es', 'fr', 'de', 'ar', 'zh', 'ja', 'ko'];
 
 export const metadata: Metadata = {
-  title: "Handson Ai - Handson-AI Project AI management platform",
+  title: "HandsOn AI - Professional AI Project Management Platform",
   description: "Professional project management application with AI intelligence",
   keywords: ["project", "management", "AI", "business", "procurement"],
   authors: [{ name: "Handson Systems" }],
@@ -73,6 +77,11 @@ export default async function LocaleLayout({
     <html lang={locale} suppressHydrationWarning className="scroll-smooth">
       <head>
         <meta name="color-scheme" content="light dark" />
+        {/* Add error handling meta tags */}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <meta name="robots" content="noindex" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Handson Ai" />
@@ -102,14 +111,14 @@ export default async function LocaleLayout({
       <body className={`${inter.variable} antialiased min-h-screen bg-background text-foreground`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NoAuthProvider>
-            <div className="min-h-screen w-full flex">
+            <div className="min-h-screen w-full">
               <AppSidebar />
-              <div className="flex-1 flex flex-col min-h-screen">
+              <div className="ml-72">
                 <AppHeader />
-                <main className="flex-1 bg-background">
-                  <div className="animate-fade-in">
+                <main className="min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-gray-900">
+                  <ClientMotionLoader>
                     {children}
-                  </div>
+                  </ClientMotionLoader>
                 </main>
               </div>
             </div>

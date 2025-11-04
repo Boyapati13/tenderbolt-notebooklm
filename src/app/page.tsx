@@ -1,7 +1,11 @@
-import { redirect } from 'next/navigation';
+import HeroClient from '@/components/home/HeroClient';
+import FeaturesClient from '@/components/home/FeaturesClient';
 
-export default function Home() {
-  // For this example, we're redirecting to the dashboard.
-  // In a real-world scenario, you might want to show a landing page.
-  redirect('/dashboard');
+export default function HomePage() {
+  return (
+    <div>
+      <HeroClient />
+      <FeaturesClient />
+    </div>
+  );
 }

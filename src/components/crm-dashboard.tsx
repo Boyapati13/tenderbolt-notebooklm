@@ -563,3 +563,6 @@ export function CRMDashboard({ onProjectClick }: { onProjectClick: (projectId: s
     </div>
   );
 }
+
+// Backwards-compatible named export: some files import { CrmDashboard } (different casing).
+export const CrmDashboard = CRMDashboard;

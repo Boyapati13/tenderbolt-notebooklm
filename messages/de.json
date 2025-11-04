@@ -43,27 +43,27 @@
     "signInWithGoogle": "Mit Google anmelden",
     "signInWithEmail": "Mit E-Mail anmelden",
     "welcomeBack": "Willkommen zurück",
-    "signInToAccount": "Melden Sie sich in Ihrem Syntara Tenders AI-Konto an"
+    "signInToAccount": "Melden Sie sich in Ihrem Handson-AI Project AI-Konto an"
   },
   "dashboard": {
     "title": "Dashboard",
-    "welcome": "Willkommen bei Syntara Tenders AI",
+    "welcome": "Willkommen bei Handson-AI Project AI",
     "overview": "Übersicht",
     "recentActivity": "Letzte Aktivität",
     "quickActions": "Schnellaktionen",
     "statistics": "Statistiken"
   },
-  "tenders": {
-    "title": "Ausschreibungen",
-    "newTender": "Neue Ausschreibung",
-    "tenderTitle": "Ausschreibungstitel",
+  "projects": {
+    "title": "Projekte",
+    "newProject": "Neues Projekt",
+    "projectTitle": "Projekttitel",
     "status": "Status",
     "winProbability": "Gewinnwahrscheinlichkeit",
     "dueDate": "Fälligkeitsdatum",
     "noDueDate": "Kein Fälligkeitsdatum",
     "add": "Hinzufügen",
-    "editTender": "Ausschreibung bearbeiten",
-    "deleteTender": "Ausschreibung löschen"
+    "editProject": "Projekt bearbeiten",
+    "deleteProject": "Projekt löschen"
   },
   "documents": {
     "title": "Dokumente",

@@ -2,7 +2,7 @@
 export interface IntegrationConfig {
   id: string;
   name: string;
-  type: 'google_drive' | 'gmail' | 'slack' | 'jira' | 'onedrive' | 'outlook';
+  type: 'google_drive' | 'gmail' | 'slack' | 'jira' | 'onedrive' | 'outlook' | 'confluence' | 'monday' | 'github' | 'taskmaster';
   enabled: boolean;
   credentials: Record<string, any>;
   settings: Record<string, any>;
@@ -102,6 +102,55 @@ export interface OutlookConfig extends IntegrationConfig {
   };
 }
 
+export interface ConfluenceConfig extends IntegrationConfig {
+    type: 'confluence';
+    credentials: {
+        apiToken: string;
+        domain: string;
+        email: string;
+    };
+    settings: {
+        spaceKey: string;
+        autoSync: boolean;
+        syncInterval: number; // minutes
+    };
+}
+
+export interface MondayConfig extends IntegrationConfig {
+    type: 'monday';
+    credentials: {
+        apiToken: string;
+    };
+    settings: {
+        boardId: string;
+        autoSync: boolean;
+        syncInterval: number; // minutes
+    };
+}
+
+export interface GitHubConfig extends IntegrationConfig {
+    type: 'github';
+    credentials: {
+        accessToken: string;
+    };
+    settings: {
+        repository: string;
+        autoSync: boolean;
+        syncInterval: number; // minutes
+    };
+}
+
+export interface TaskmasterConfig extends IntegrationConfig {
+    type: 'taskmaster';
+    credentials: {
+        apiKey: string;
+    };
+    settings: {
+        autoSync: boolean;
+        syncInterval: number; // minutes
+    };
+}
+
 export class IntegrationService {
   private static instance: IntegrationService;
   private integrations: Map<string, IntegrationConfig> = new Map();
@@ -199,6 +248,54 @@ export class IntegrationService {
         },
         status: 'disconnected',
       },
+      {
+        id: 'confluence',
+        name: 'Confluence',
+        type: 'confluence',
+        enabled: false,
+        credentials: {},
+        settings: {
+            autoSync: true,
+            syncInterval: 30,
+        },
+        status: 'disconnected',
+      },
+      {
+        id: 'monday',
+        name: 'Monday.com',
+        type: 'monday',
+        enabled: false,
+        credentials: {},
+        settings: {
+            autoSync: true,
+            syncInterval: 15,
+        },
+        status: 'disconnected',
+      },
+      {
+        id: 'github',
+        name: 'GitHub',
+        type: 'github',
+        enabled: false,
+        credentials: {},
+        settings: {
+            autoSync: true,
+            syncInterval: 30,
+        },
+        status: 'disconnected',
+      },
+      {
+        id: 'taskmaster',
+        name: 'Taskmaster',
+        type: 'taskmaster',
+        enabled: false,
+        credentials: {},
+        settings: {
+            autoSync: true,
+            syncInterval: 15,
+        },
+        status: 'disconnected',
+      },
     ];
 
     defaultIntegrations.forEach(integration => {
@@ -227,33 +324,7 @@ export class IntegrationService {
         this.integrations.set('google_drive', config);
         return true;
       }
-      
-      // Real API call (uncomment when ready for production)
-      /*
-      const response = await fetch('/api/integrations/google-drive/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credentials }),
-      });
 
-      if (response.ok) {
-        const config: GoogleDriveConfig = {
-          id: 'google_drive',
-          name: 'Google Drive',
-          type: 'google_drive',
-          enabled: true,
-          credentials,
-          settings: {
-            autoSync: true,
-            syncInterval: 30,
-          },
-          status: 'connected',
-          lastSync: new Date(),
-        };
-        this.integrations.set('google_drive', config);
-        return true;
-      }
-      */
       return false;
     } catch (error) {
       console.error('Google Drive connection failed:', error);
@@ -304,33 +375,6 @@ export class IntegrationService {
         return true;
       }
       
-      // Real API call (uncomment when ready for production)
-      /*
-      const response = await fetch('/api/integrations/gmail/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credentials }),
-      });
-
-      if (response.ok) {
-        const config: GmailConfig = {
-          id: 'gmail',
-          name: 'Gmail',
-          type: 'gmail',
-          enabled: true,
-          credentials,
-          settings: {
-            labels: ['INBOX', 'IMPORTANT'],
-            autoSync: true,
-            syncInterval: 15,
-          },
-          status: 'connected',
-          lastSync: new Date(),
-        };
-        this.integrations.set('gmail', config);
-        return true;
-      }
-      */
       return false;
     } catch (error) {
       console.error('Gmail connection failed:', error);
@@ -384,36 +428,6 @@ export class IntegrationService {
         return true;
       }
       
-      // Real API call (uncomment when ready for production)
-      /*
-      const response = await fetch('/api/integrations/slack/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credentials }),
-      });
-
-      if (response.ok) {
-        const config: SlackConfig = {
-          id: 'slack',
-          name: 'Slack',
-          type: 'slack',
-          enabled: true,
-          credentials,
-          settings: {
-            channels: [],
-            notifications: {
-              tenderUpdates: true,
-              deadlineAlerts: true,
-              teamAssignments: true,
-            },
-          },
-          status: 'connected',
-          lastSync: new Date(),
-        };
-        this.integrations.set('slack', config);
-        return true;
-      }
-      */
       return false;
     } catch (error) {
       console.error('Slack connection failed:', error);
@@ -459,34 +473,6 @@ export class IntegrationService {
         return true;
       }
       
-      // Real API call (uncomment when ready for production)
-      /*
-      const response = await fetch('/api/integrations/jira/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credentials }),
-      });
-
-      if (response.ok) {
-        const config: JiraConfig = {
-          id: 'jira',
-          name: 'Jira',
-          type: 'jira',
-          enabled: true,
-          credentials,
-          settings: {
-            projectKey: 'TENDER',
-            issueType: 'Task',
-            autoCreateIssues: true,
-            syncFields: ['summary', 'description', 'assignee'],
-          },
-          status: 'connected',
-          lastSync: new Date(),
-        };
-        this.integrations.set('jira', config);
-        return true;
-      }
-      */
       return false;
     } catch (error) {
       console.error('Jira connection failed:', error);
@@ -535,32 +521,6 @@ export class IntegrationService {
         return true;
       }
       
-      // Real API call (uncomment when ready for production)
-      /*
-      const response = await fetch('/api/integrations/onedrive/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credentials }),
-      });
-
-      if (response.ok) {
-        const config: OneDriveConfig = {
-          id: 'onedrive',
-          name: 'OneDrive',
-          type: 'onedrive',
-          enabled: true,
-          credentials,
-          settings: {
-            autoSync: true,
-            syncInterval: 30,
-          },
-          status: 'connected',
-          lastSync: new Date(),
-        };
-        this.integrations.set('onedrive', config);
-        return true;
-      }
-      */
       return false;
     } catch (error) {
       console.error('OneDrive connection failed:', error);
@@ -613,35 +573,6 @@ export class IntegrationService {
         return true;
       }
       
-      // Real API call (uncomment when ready for production)
-      /*
-      const response = await fetch('/api/integrations/outlook/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credentials }),
-      });
-
-      if (response.ok) {
-        const config: OutlookConfig = {
-          id: 'outlook',
-          name: 'Outlook',
-          type: 'outlook',
-          enabled: true,
-          credentials,
-          settings: {
-            folders: ['Inbox', 'Sent Items'],
-            autoSync: true,
-            syncInterval: 15,
-            calendarSync: false,
-            contactsSync: false,
-          },
-          status: 'connected',
-          lastSync: new Date(),
-        };
-        this.integrations.set('outlook', config);
-        return true;
-      }
-      */
       return false;
     } catch (error) {
       console.error('Outlook connection failed:', error);
@@ -680,6 +611,157 @@ export class IntegrationService {
     } catch (error) {
       console.error('Outlook email send failed:', error);
       return false;
+    }
+  }
+
+  async connectConfluence(credentials: ConfluenceConfig['credentials']): Promise<boolean> {
+    try {
+      // Demo mode - simulate successful connection
+      if (credentials && credentials.apiToken && credentials.domain && credentials.email) {
+        const config: ConfluenceConfig = {
+          id: 'confluence',
+          name: 'Confluence',
+          type: 'confluence',
+          enabled: true,
+          credentials,
+          settings: {
+            spaceKey: 'TENDER',
+            autoSync: true,
+            syncInterval: 30,
+          },
+          status: 'connected',
+          lastSync: new Date(),
+        };
+        this.integrations.set('confluence', config);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Confluence connection failed:', error);
+      return false;
+    }
+  }
+
+  async connectMonday(credentials: MondayConfig['credentials']): Promise<boolean> {
+    try {
+      // Demo mode - simulate successful connection
+      if (credentials && credentials.apiToken) {
+        const config: MondayConfig = {
+          id: 'monday',
+          name: 'Monday.com',
+          type: 'monday',
+          enabled: true,
+          credentials,
+          settings: {
+            boardId: '',
+            autoSync: true,
+            syncInterval: 15,
+          },
+          status: 'connected',
+          lastSync: new Date(),
+        };
+        this.integrations.set('monday', config);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Monday.com connection failed:', error);
+      return false;
+    }
+  }
+
+  async syncMonday(): Promise<any[]> {
+    try {
+      const response = await fetch('/api/integrations/monday/sync');
+      const data = await response.json();
+      
+      if (response.ok) {
+        const config = this.integrations.get('monday') as MondayConfig;
+        if (config) {
+          config.lastSync = new Date();
+          this.integrations.set('monday', config);
+        }
+        return data.items || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('Monday.com sync failed:', error);
+      return [];
+    }
+  }
+
+  async connectGitHub(credentials: GitHubConfig['credentials']): Promise<boolean> {
+    try {
+      // Demo mode - simulate successful connection
+      if (credentials && credentials.accessToken) {
+        const config: GitHubConfig = {
+          id: 'github',
+          name: 'GitHub',
+          type: 'github',
+          enabled: true,
+          credentials,
+          settings: {
+            repository: '',
+            autoSync: true,
+            syncInterval: 30,
+          },
+          status: 'connected',
+          lastSync: new Date(),
+        };
+        this.integrations.set('github', config);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('GitHub connection failed:', error);
+      return false;
+    }
+  }
+
+  async connectTaskmaster(credentials: TaskmasterConfig['credentials']): Promise<boolean> {
+    try {
+      // Demo mode - simulate successful connection
+      if (credentials && credentials.apiKey) {
+        const config: TaskmasterConfig = {
+          id: 'taskmaster',
+          name: 'Taskmaster',
+          type: 'taskmaster',
+          enabled: true,
+          credentials,
+          settings: {
+            autoSync: true,
+            syncInterval: 15,
+          },
+          status: 'connected',
+          lastSync: new Date(),
+        };
+        this.integrations.set('taskmaster', config);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Taskmaster connection failed:', error);
+      return false;
+    }
+  }
+
+  async syncTaskmaster(): Promise<any[]> {
+    try {
+      const response = await fetch('/api/integrations/taskmaster/sync');
+      const data = await response.json();
+      
+      if (response.ok) {
+        const config = this.integrations.get('taskmaster') as TaskmasterConfig;
+        if (config) {
+          config.lastSync = new Date();
+          this.integrations.set('taskmaster', config);
+        }
+        return data.tasks || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('Taskmaster sync failed:', error);
+      return [];
     }
   }
 
@@ -731,6 +813,12 @@ export class IntegrationService {
             break;
           case 'outlook':
             await this.syncOutlook();
+            break;
+          case 'monday':
+            await this.syncMonday();
+            break;
+          case 'taskmaster':
+            await this.syncTaskmaster();
             break;
           // Slack and Jira don't have sync methods
           default:

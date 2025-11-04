@@ -43,27 +43,27 @@
     "signInWithGoogle": "Iniciar sesión con Google",
     "signInWithEmail": "Iniciar sesión con Email",
     "welcomeBack": "Bienvenido de vuelta",
-    "signInToAccount": "Inicia sesión en tu cuenta de Syntara Tenders AI"
+    "signInToAccount": "Inicia sesión en tu cuenta de Handson-AI Project AI"
   },
   "dashboard": {
     "title": "Panel de Control",
-    "welcome": "Bienvenido a Syntara Tenders AI",
+    "welcome": "Bienvenido a Handson-AI Project AI",
     "overview": "Resumen",
     "recentActivity": "Actividad Reciente",
     "quickActions": "Acciones Rápidas",
     "statistics": "Estadísticas"
   },
-  "tenders": {
-    "title": "Licitaciones",
-    "newTender": "Nueva Licitación",
-    "tenderTitle": "Título de la Licitación",
+  "projects": {
+    "title": "Proyectos",
+    "newProject": "Nuevo Proyecto",
+    "projectTitle": "Título del Proyecto",
     "status": "Estado",
     "winProbability": "Probabilidad de Ganar",
     "dueDate": "Fecha de Vencimiento",
     "noDueDate": "Sin fecha de vencimiento",
     "add": "Agregar",
-    "editTender": "Editar Licitación",
-    "deleteTender": "Eliminar Licitación"
+    "editProject": "Editar Proyecto",
+    "deleteProject": "Eliminar Proyecto"
   },
   "documents": {
     "title": "Documentos",

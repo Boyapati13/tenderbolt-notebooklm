@@ -37,12 +37,11 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: dark)", color: "#60a5fa" },
   ],
 };
-
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <head>
@@ -78,7 +77,8 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NoAuthProvider>
             {children}
-          </NoAuthProvider>
+            <Toaster />
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

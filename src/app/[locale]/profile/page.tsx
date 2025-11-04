@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useAuth } from "@/components/no-auth-provider";
 import { useState } from "react";

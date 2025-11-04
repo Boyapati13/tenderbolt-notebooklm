@@ -21,21 +21,21 @@ const inter = Inter({
 const locales = ['en', 'es', 'fr', 'de', 'ar', 'zh', 'ja', 'ko'];
 
 export const metadata: Metadata = {
-  title: "Syntara Tenders AI",
-  description: "Professional tender management application with AI intelligence",
-  keywords: ["tender", "management", "AI", "business", "procurement"],
-  authors: [{ name: "Syntara" }],
-  creator: "Syntara",
-  publisher: "Syntara",
+  title: "Handson Ai - Handson-AI Project AI management platform",
+  description: "Professional project management application with AI intelligence",
+  keywords: ["project", "management", "AI", "business", "procurement"],
+  authors: [{ name: "Handson Systems" }],
+  creator: "Handson Systems",
+  publisher: "Handson Systems",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   icons: {
-    icon: "/syntara-logo.svg",
-    shortcut: "/syntara-logo.svg",
-    apple: "/syntara-logo.svg",
+    icon: "https://www.handsonsystems.com/wp-content/uploads/2023/07/handsonsystems-fav-1.png",
+    shortcut: "https://www.handsonsystems.com/wp-content/uploads/2023/07/handsonsystems-fav-1.png",
+    apple: "https://www.handsonsystems.com/wp-content/uploads/2023/07/handsonsystems-fav-1.png",
   },
   manifest: "/manifest.json",
 };
@@ -45,6 +45,11 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: "#3b82f6" },
     { media: "(prefers-color-scheme: dark)", color: "#60a5fa" },
   ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default async function LocaleLayout({
@@ -67,15 +72,14 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning className="scroll-smooth">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         <meta name="color-scheme" content="light dark" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Syntara" />
+        <meta name="apple-mobile-web-app-title" content="Handson Ai" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#3b82f6" />
         <meta name="msapplication-tap-highlight" content="no" />
-        <link rel="apple-touch-icon" href="/syntara-icon.svg" />
+        <link rel="apple-touch-icon" href="https://www.handsonsystems.com/wp-content/uploads/2023/07/handsonsystems-fav-1.png" />
         <link rel="manifest" href="/manifest.json" />
         <script
           dangerouslySetInnerHTML={{

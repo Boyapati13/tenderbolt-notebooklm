@@ -1,3 +1,4 @@
+
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -100,8 +101,8 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: "/en/auth/signin",
-    error: "/en/auth/error",
+    signIn: "/auth/signin",
+    error: "/auth/error",
   },
   debug: process.env.NODE_ENV === "development",
   // Add explicit URL configuration
@@ -123,16 +124,4 @@ export const authOptions: NextAuthOptions = {
   // Add custom fetch configuration
   adapter: undefined, // Use JWT strategy
   secret: process.env.NEXTAUTH_SECRET,
-  // Add custom fetch function to handle errors
-  logger: {
-    error(code, metadata) {
-      console.error("NextAuth error:", code, metadata);
-    },
-    warn(code) {
-      console.warn("NextAuth warning:", code);
-    },
-    debug(code, metadata) {
-      console.log("NextAuth debug:", code, metadata);
-    },
-  },
 };

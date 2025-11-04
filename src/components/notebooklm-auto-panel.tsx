@@ -21,7 +21,8 @@ import {
   HelpCircle,
   Search,
   Filter,
-  Star
+  Star,
+  X
 } from 'lucide-react';
 
 interface AutoAnalysisResult {
@@ -78,23 +79,23 @@ interface AutoAnalysisResult {
 }
 
 interface NotebookLMAutoPanelProps {
-  tenderId: string;
+  projectId: string;
   documentId?: string;
   onClose?: () => void;
 }
 
-export default function NotebookLMAutoPanel({ tenderId, documentId, onClose }: NotebookLMAutoPanelProps) {
-  const [activeTab, setActiveTab] = useState<'document' | 'tender' | 'questions' | 'tags' | 'validate'>('document');
+export default function NotebookLMAutoPanel({ projectId, documentId, onClose }: NotebookLMAutoPanelProps) {
+  const [activeTab, setActiveTab] = useState<'document' | 'project' | 'questions' | 'tags' | 'validate'>('document');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AutoAnalysisResult | null>(null);
-  const [tenderInsights, setTenderInsights] = useState<any>(null);
+  const [projectInsights, setProjectInsights] = useState<any>(null);
   const [autoQuestions, setAutoQuestions] = useState<string[]>([]);
   const [autoTags, setAutoTags] = useState<any>(null);
   const [validation, setValidation] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const runAutoAnalysis = async (type: 'document' | 'tender' | 'questions' | 'tags' | 'validate') => {
-    if (!documentId && type !== 'tender') {
+  const runAutoAnalysis = async (type: 'document' | 'project' | 'questions' | 'tags' | 'validate') => {
+    if (!documentId && type !== 'project') {
       setError('Document ID is required for this analysis');
       return;
     }
@@ -108,7 +109,7 @@ export default function NotebookLMAutoPanel({ tenderId, documentId, onClose }: N
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           documentId,
-          tenderId,
+          projectId,
           type
         })
       });
@@ -123,8 +124,8 @@ export default function NotebookLMAutoPanel({ tenderId, documentId, onClose }: N
         case 'document':
           setAnalysisResult(data.result);
           break;
-        case 'tender':
-          setTenderInsights(data.result);
+        case 'project':
+          setProjectInsights(data.result);
           break;
         case 'questions':
           setAutoQuestions(data.result);
@@ -179,7 +180,7 @@ export default function NotebookLMAutoPanel({ tenderId, documentId, onClose }: N
           </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-900">NotebookLM Auto Analysis</h2>
-            <p className="text-sm text-gray-600">AI-powered document and tender insights</p>
+            <p className="text-sm text-gray-600">AI-powered document and project insights</p>
           </div>
         </div>
         {onClose && (
@@ -196,7 +197,7 @@ export default function NotebookLMAutoPanel({ tenderId, documentId, onClose }: N
       <div className="flex space-x-1 mb-6 bg-gray-100 rounded-lg p-1">
         {[
           { id: 'document', label: 'Document Analysis', icon: FileText },
-          { id: 'tender', label: 'Tender Insights', icon: Target },
+          { id: 'project', label: 'Project Insights', icon: Target },
           { id: 'questions', label: 'Auto Questions', icon: HelpCircle },
           { id: 'tags', label: 'Auto Tags', icon: Tag },
           { id: 'validate', label: 'Validation', icon: CheckCircle }
@@ -228,7 +229,7 @@ export default function NotebookLMAutoPanel({ tenderId, documentId, onClose }: N
           ) : (
             <Zap size={20} />
           )}
-          {isAnalyzing ? 'Analyzing...' : `Run ${activeTab === 'document' ? 'Document' : activeTab === 'tender' ? 'Tender' : activeTab === 'questions' ? 'Questions' : activeTab === 'tags' ? 'Tags' : 'Validation'} Analysis`}
+          {isAnalyzing ? 'Analyzing...' : `Run ${activeTab === 'document' ? 'Document' : activeTab === 'project' ? 'Project' : activeTab === 'questions' ? 'Questions' : activeTab === 'tags' ? 'Tags' : 'Validation'} Analysis`}
         </button>
       </div>
 
@@ -402,34 +403,34 @@ export default function NotebookLMAutoPanel({ tenderId, documentId, onClose }: N
           </div>
         )}
 
-        {/* Tender Insights */}
-        {activeTab === 'tender' && tenderInsights && (
+        {/* Project Insights */}
+        {activeTab === 'project' && projectInsights && (
           <div className="space-y-6">
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <Target size={20} />
-                Tender Insights
+                Project Insights
               </h3>
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Executive Summary</h4>
-                  <p className="text-gray-700">{tenderInsights.executiveSummary}</p>
+                  <p className="text-gray-700">{projectInsights.executiveSummary}</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Success Probability</h4>
                     <div className="text-3xl font-bold text-green-600">
-                      {(tenderInsights.successProbability * 100).toFixed(0)}%
+                      {(projectInsights.successProbability * 100).toFixed(0)}%
                     </div>
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Priority Level</h4>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      tenderInsights.priorityLevel === 'high' ? 'bg-red-100 text-red-800' :
-                      tenderInsights.priorityLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                      projectInsights.priorityLevel === 'high' ? 'bg-red-100 text-red-800' :
+                      projectInsights.priorityLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-green-100 text-green-800'
                     }`}>
-                      {tenderInsights.priorityLevel}
+                      {projectInsights.priorityLevel}
                     </span>
                   </div>
                 </div>
@@ -440,7 +441,7 @@ export default function NotebookLMAutoPanel({ tenderId, documentId, onClose }: N
               <div className="bg-green-50 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 mb-3">Key Strengths</h4>
                 <ul className="space-y-2">
-                  {tenderInsights.keyStrengths?.map((strength: string, index: number) => (
+                  {projectInsights.keyStrengths?.map((strength: string, index: number) => (
                     <li key={index} className="text-gray-700 flex items-start gap-2">
                       <span className="text-green-600 mt-1">✓</span>
                       {strength}
@@ -452,7 +453,7 @@ export default function NotebookLMAutoPanel({ tenderId, documentId, onClose }: N
               <div className="bg-red-50 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 mb-3">Potential Challenges</h4>
                 <ul className="space-y-2">
-                  {tenderInsights.potentialChallenges?.map((challenge: string, index: number) => (
+                  {projectInsights.potentialChallenges?.map((challenge: string, index: number) => (
                     <li key={index} className="text-gray-700 flex items-start gap-2">
                       <span className="text-red-600 mt-1">⚠</span>
                       {challenge}
@@ -465,7 +466,7 @@ export default function NotebookLMAutoPanel({ tenderId, documentId, onClose }: N
             <div className="bg-blue-50 rounded-lg p-4">
               <h4 className="font-medium text-gray-900 mb-3">Recommended Actions</h4>
               <ul className="space-y-2">
-                {tenderInsights.recommendedActions?.map((action: string, index: number) => (
+                {projectInsights.recommendedActions?.map((action: string, index: number) => (
                   <li key={index} className="text-gray-700 flex items-start gap-2">
                     <span className="text-blue-600 mt-1">→</span>
                     {action}
@@ -580,7 +581,7 @@ export default function NotebookLMAutoPanel({ tenderId, documentId, onClose }: N
         )}
 
         {/* No Results */}
-        {!analysisResult && !tenderInsights && autoQuestions.length === 0 && !autoTags && !validation && (
+        {!analysisResult && !projectInsights && autoQuestions.length === 0 && !autoTags && !validation && (
           <div className="text-center py-12">
             <Brain className="mx-auto text-gray-400 mb-4" size={48} />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to Analyze</h3>

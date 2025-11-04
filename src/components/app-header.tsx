@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -35,7 +35,7 @@ export function AppHeader() {
           
           {/* App Title */}
           <div className="text-xl font-semibold text-card-foreground">
-            Tenders AI
+            HandsOn AI
           </div>
         </div>
         
@@ -78,7 +78,7 @@ export function AppHeader() {
             {/* Enhanced Mobile Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
               <span className="text-xl font-bold gradient-text">
-                Tenders AI
+                HandsOn AI
               </span>
               <button
                 onClick={() => setShowMobileMenu(false)}
@@ -120,5 +120,3 @@ export function AppHeader() {
     </>
   );
 }
-
-

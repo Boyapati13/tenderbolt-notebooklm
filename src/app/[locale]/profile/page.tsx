@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useAuth } from "@/components/no-auth-provider";
 import { useState } from "react";
@@ -24,8 +24,8 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     setFormData({
-      name: session?.user?.name || "",
-      email: session?.user?.email || "",
+      name: user?.name || "",
+      email: user?.email || "",
       phone: "",
       department: "",
       role: "user"
@@ -33,7 +33,6 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
-  const user = session?.user;
   const initials = user?.name
     ?.split(" ")
     .map((n) => n[0])

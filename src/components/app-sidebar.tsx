@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
@@ -49,7 +49,7 @@ export function AppSidebar() {
         <div className="flex-shrink-0">
           <img 
             src="/syntara-logo.svg" 
-            alt="Syntara Logo" 
+            alt="Handson Ai Logo" 
             className="h-12 w-auto object-contain"
           />
         </div>

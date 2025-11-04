@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 import { 
@@ -17,7 +17,11 @@ import {
   Eye,
   EyeOff,
   Cloud,
-  Briefcase
+  Briefcase,
+  BookOpen,
+  ClipboardList,
+  Github,
+  CheckSquare
 } from 'lucide-react';
 import { integrationService, IntegrationConfig } from '@/lib/integrations';
 
@@ -32,140 +36,100 @@ interface IntegrationCardProps {
 function IntegrationCard({ integration, onConnect, onDisconnect, onSync, onConfigure }: IntegrationCardProps) {
   const getIcon = () => {
     switch (integration.type) {
-      case 'google_drive': return <FolderOpen className="w-6 h-6" />;
-      case 'gmail': return <Mail className="w-6 h-6" />;
-      case 'slack': return <MessageSquare className="w-6 h-6" />;
-      case 'jira': return <Calendar className="w-6 h-6" />;
-      case 'onedrive': return <Cloud className="w-6 h-6" />;
-      case 'outlook': return <Briefcase className="w-6 h-6" />;
-      default: return <Settings className="w-6 h-6" />;
-    }
-  };
-
-  const getStatusColor = () => {
-    switch (integration.status) {
-      case 'connected': return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/20';
-      case 'disconnected': return 'text-muted-foreground bg-muted';
-      case 'error': return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/20';
-      default: return 'text-muted-foreground bg-muted';
-    }
-  };
-
-  const getStatusIcon = () => {
-    switch (integration.status) {
-      case 'connected': return <CheckCircle className="w-4 h-4" />;
-      case 'disconnected': return <XCircle className="w-4 h-4" />;
-      case 'error': return <AlertCircle className="w-4 h-4" />;
-      default: return <XCircle className="w-4 h-4" />;
+      case 'google_drive': return <FolderOpen className="w-8 h-8 text-blue-500" />;
+      case 'gmail': return <Mail className="w-8 h-8 text-red-500" />;
+      case 'slack': return <MessageSquare className="w-8 h-8 text-purple-500" />;
+      case 'jira': return <Calendar className="w-8 h-8 text-sky-500" />;
+      case 'onedrive': return <Cloud className="w-8 h-8 text-blue-600" />;
+      case 'outlook': return <Briefcase className="w-8 h-8 text-sky-600" />;
+      case 'confluence': return <BookOpen className="w-8 h-8 text-blue-700" />;
+      case 'monday': return <ClipboardList className="w-8 h-8 text-pink-500" />;
+      case 'github': return <Github className="w-8 h-8 text-gray-800 dark:text-white" />;
+      case 'taskmaster': return <CheckSquare className="w-8 h-8 text-green-500" />;
+      default: return <Settings className="w-8 h-8 text-gray-500" />;
     }
   };
 
   return (
-    <div className="card p-6 hover:shadow-lg transition-all duration-200">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-500">
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-4">
+          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center">
             {getIcon()}
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-card-foreground">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
               {integration.name}
             </h3>
-            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}>
-              {getStatusIcon()}
-              {integration.status.charAt(0).toUpperCase() + integration.status.slice(1)}
-            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              {integration.description}
+            </p>
           </div>
         </div>
         
+        <div className="flex flex-col items-end gap-2">
+          {integration.status === 'connected' ? (
+            <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400 rounded-full text-sm font-medium">
+              <CheckCircle size={16} />
+              <span>Connected</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 rounded-full text-sm font-medium">
+              <XCircle size={16} />
+              <span>Disconnected</span>
+            </div>
+          )}
+          
+          {integration.status === 'error' && (
+            <div className="flex items-center gap-1 text-red-600 dark:text-red-400 text-xs mt-1">
+              <AlertCircle size={14} />
+              <span>Error</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-6 flex items-center justify-between">
+        <div className="text-xs text-slate-500 dark:text-slate-400">
+          {integration.lastSync && (
+            <span>Last sync: {new Date(integration.lastSync).toLocaleString()}</span>
+          )}
+        </div>
+        
         <div className="flex items-center gap-2">
-          {integration.status === 'connected' && (
+          {integration.status === 'connected' ? (
             <>
               <button
                 onClick={() => onSync(integration.id)}
-                className="p-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors"
+                className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 title="Sync"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw size={18} />
               </button>
               <button
                 onClick={() => onConfigure(integration.id)}
-                className="p-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors"
+                className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 title="Configure"
               >
-                <Settings className="w-4 h-4" />
+                <Settings size={18} />
+              </button>
+              <button
+                onClick={() => onDisconnect(integration.id)}
+                className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                title="Disconnect"
+              >
+                <Trash2 size={18} />
               </button>
             </>
-          )}
-          
-          {integration.status === 'connected' ? (
-            <button
-              onClick={() => onDisconnect(integration.id)}
-              className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-              title="Disconnect"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
           ) : (
             <button
               onClick={() => onConnect(integration.id)}
-              className="btn-primary px-4 py-2 text-sm"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
             >
               Connect
             </button>
           )}
         </div>
-      </div>
-
-      <div className="space-y-2 text-sm text-muted-foreground">
-        {integration.lastSync && (
-          <div className="flex items-center gap-2">
-            <RefreshCw className="w-4 h-4" />
-            <span>Last sync: {new Date(integration.lastSync).toLocaleString()}</span>
-          </div>
-        )}
-        
-        {integration.type === 'google_drive' && (
-          <div className="flex items-center gap-2">
-            <FolderOpen className="w-4 h-4" />
-            <span>Document management and sync</span>
-          </div>
-        )}
-        
-        {integration.type === 'gmail' && (
-          <div className="flex items-center gap-2">
-            <Mail className="w-4 h-4" />
-            <span>Email notifications and monitoring</span>
-          </div>
-        )}
-        
-        {integration.type === 'slack' && (
-          <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4" />
-            <span>Team notifications and updates</span>
-          </div>
-        )}
-        
-        {integration.type === 'jira' && (
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            <span>Project tracking and issue management</span>
-          </div>
-        )}
-        
-        {integration.type === 'onedrive' && (
-          <div className="flex items-center gap-2">
-            <Cloud className="w-4 h-4" />
-            <span>Microsoft cloud storage and document sync</span>
-          </div>
-        )}
-        
-        {integration.type === 'outlook' && (
-          <div className="flex items-center gap-2">
-            <Briefcase className="w-4 h-4" />
-            <span>Email, calendar, and contact management</span>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -211,6 +175,12 @@ export function IntegrationsPanel() {
         case 'outlook':
           await integrationService.syncOutlook();
           break;
+        case 'monday':
+          await integrationService.syncMonday();
+          break;
+        case 'taskmaster':
+          await integrationService.syncTaskmaster();
+          break;
         default:
           break;
       }
@@ -250,6 +220,18 @@ export function IntegrationsPanel() {
         case 'outlook':
           success = await integrationService.connectOutlook(credentials.outlook || {});
           break;
+        case 'confluence':
+            success = await integrationService.connectConfluence(credentials.confluence || {});
+            break;
+        case 'monday':
+            success = await integrationService.connectMonday(credentials.monday || {});
+            break;
+        case 'github':
+            success = await integrationService.connectGitHub(credentials.github || {});
+            break;
+        case 'taskmaster':
+            success = await integrationService.connectTaskmaster(credentials.taskmaster || {});
+            break;
       }
 
       if (success) {
@@ -264,36 +246,37 @@ export function IntegrationsPanel() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg font-medium text-muted-foreground">
-          Loading integrations...
+      <div className="p-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/4 mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="h-40 bg-slate-200 dark:bg-slate-700 rounded-2xl"></div>
+            <div className="h-40 bg-slate-200 dark:bg-slate-700 rounded-2xl"></div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-8 bg-slate-50 dark:bg-slate-900 min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-card-foreground">
-            Integrations
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            Connect external services to enhance your tender management workflow
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Integrations</h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-2">
+            Connect your favorite tools to streamline your workflow.
           </p>
         </div>
-        
         <button
           onClick={() => integrationService.syncAll()}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
         >
-          <RefreshCw className="w-4 h-4" />
-          Sync All
+          <RefreshCw size={16} />
+          <span>Sync All</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {integrations.map((integration) => (
           <IntegrationCard
             key={integration.id}
@@ -308,11 +291,14 @@ export function IntegrationsPanel() {
 
       {/* Connect Modal */}
       {showConnectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-card-foreground mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-4">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
               Connect {integrations.find(i => i.id === showConnectModal)?.name}
-            </h3>
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400 mb-6">
+              Enter your credentials to connect your account.
+            </p>
             
             <div className="space-y-4">
               {showConnectModal === 'google_drive' && (
@@ -328,7 +314,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         google_drive: { ...credentials.google_drive, accessToken: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter Google Drive access token"
                     />
                   </div>
@@ -343,7 +329,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         google_drive: { ...credentials.google_drive, refreshToken: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter Google Drive refresh token"
                     />
                   </div>
@@ -363,7 +349,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         slack: { ...credentials.slack, botToken: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter Slack bot token"
                     />
                   </div>
@@ -378,7 +364,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         slack: { ...credentials.slack, teamId: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter Slack team ID"
                     />
                   </div>
@@ -398,7 +384,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         jira: { ...credentials.jira, domain: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="your-domain (without .atlassian.net)"
                     />
                   </div>
@@ -413,7 +399,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         jira: { ...credentials.jira, email: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter your Jira email"
                     />
                   </div>
@@ -428,7 +414,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         jira: { ...credentials.jira, apiToken: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter Jira API token"
                     />
                   </div>
@@ -448,7 +434,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         onedrive: { ...credentials.onedrive, accessToken: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter OneDrive access token"
                     />
                   </div>
@@ -463,7 +449,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         onedrive: { ...credentials.onedrive, refreshToken: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter OneDrive refresh token"
                     />
                   </div>
@@ -478,7 +464,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         onedrive: { ...credentials.onedrive, tenantId: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter Microsoft tenant ID"
                     />
                   </div>
@@ -498,7 +484,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         outlook: { ...credentials.outlook, accessToken: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter Outlook access token"
                     />
                   </div>
@@ -513,7 +499,7 @@ export function IntegrationsPanel() {
                         ...credentials,
                         outlook: { ...credentials.outlook, refreshToken: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter Outlook refresh token"
                     />
                   </div>
@@ -528,24 +514,134 @@ export function IntegrationsPanel() {
                         ...credentials,
                         outlook: { ...credentials.outlook, tenantId: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input w-full"
                       placeholder="Enter Microsoft tenant ID"
+                    />
+                  </div>
+                </>
+              )}
+
+              {showConnectModal === 'confluence' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Domain
+                    </label>
+                    <input
+                      type="text"
+                      value={credentials.confluence?.domain || ''}
+                      onChange={(e) => setCredentials({
+                        ...credentials,
+                        confluence: { ...credentials.confluence, domain: e.target.value }
+                      })}
+                      className="input w-full"
+                      placeholder="your-domain.atlassian.net"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={credentials.confluence?.email || ''}
+                      onChange={(e) => setCredentials({
+                        ...credentials,
+                        confluence: { ...credentials.confluence, email: e.target.value }
+                      })}
+                      className="input w-full"
+                      placeholder="Enter your Confluence email"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      API Token
+                    </label>
+                    <input
+                      type="password"
+                      value={credentials.confluence?.apiToken || ''}
+                      onChange={(e) => setCredentials({
+                        ...credentials,
+                        confluence: { ...credentials.confluence, apiToken: e.target.value }
+                      })}
+                      className="input w-full"
+                      placeholder="Enter Confluence API token"
+                    />
+                  </div>
+                </>
+              )}
+
+              {showConnectModal === 'monday' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      API Token
+                    </label>
+                    <input
+                      type="password"
+                      value={credentials.monday?.apiToken || ''}
+                      onChange={(e) => setCredentials({
+                        ...credentials,
+                        monday: { ...credentials.monday, apiToken: e.target.value }
+                      })}
+                      className="input w-full"
+                      placeholder="Enter Monday.com API v2 token"
+                    />
+                  </div>
+                </>
+              )}
+
+              {showConnectModal === 'github' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Personal Access Token
+                    </label>
+                    <input
+                      type="password"
+                      value={credentials.github?.accessToken || ''}
+                      onChange={(e) => setCredentials({
+                        ...credentials,
+                        github: { ...credentials.github, accessToken: e.target.value }
+                      })}
+                      className="input w-full"
+                      placeholder="Enter GitHub personal access token"
+                    />
+                  </div>
+                </>
+              )}
+
+              {showConnectModal === 'taskmaster' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      API Key
+                    </label>
+                    <input
+                      type="password"
+                      value={credentials.taskmaster?.apiKey || ''}
+                      onChange={(e) => setCredentials({
+                        ...credentials,
+                        taskmaster: { ...credentials.taskmaster, apiKey: e.target.value }
+                      })}
+                      className="input w-full"
+                      placeholder="Enter Taskmaster API key"
                     />
                   </div>
                 </>
               )}
             </div>
             
-            <div className="flex items-center gap-3 mt-6">
+            <div className="flex items-center gap-4 mt-8">
               <button
                 onClick={handleConnectSubmit}
-                className="flex-1 btn-primary px-4 py-2 text-sm"
+                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               >
                 Connect
               </button>
               <button
                 onClick={() => setShowConnectModal(null)}
-                className="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                className="flex-1 px-4 py-3 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 transition-colors"
               >
                 Cancel
               </button>

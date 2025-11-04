@@ -12,6 +12,7 @@ model Organization {
   id        String   @id @default(cuid())
   name      String
   users     User[]
+  projects  Project[]
   tenders   Tender[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -28,10 +29,77 @@ model User {
   department     String?       // Department/Division
   organization   Organization? @relation(fields: [organizationId], references: [id])
   organizationId String?
+  projects       Project[]      @relation("OwnerProjects")
   tenders        Tender[]      @relation("OwnerTenders")
   assignments    TeamMember[]  // Projects assigned to this user
   accounts       Account[]
   sessions       Session[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Project {
+  id             String        @id @default(cuid())
+  title          String
+  description    String?
+  value          Int?          // value in dollars
+  valueMinor     Int?          // value in minor units e.g. cents
+  currency       String?       // e.g. USD
+  deadline       DateTime?     // submission deadline
+  dueDate        DateTime?
+  status         String        @default("discovery") // discovery, interested, working, submitted, closed, not_interested
+  winProbability Int           @default(0) // 0-100
+  technicalScore Int?          @default(0) // 0-100
+  commercialScore Int?         @default(0) // 0-100
+  complianceScore Int?         @default(0) // 0-100
+  riskScore      Int?          @default(0) // 0-100
+  client         String?       // client name
+  location       String?       // project location/region
+  stage          String?       // current stage (deprecated, use status)
+  submissionDays Int?          // days to submission
+  lastScoredAt   DateTime?     // when scoring was last updated
+  goNoGo         GoDecision    @default(UNDECIDED)
+  
+  // Auto-extracted metadata
+  autoExtractedTitle String?   // Title extracted from project document
+  autoExtractedBudget String?  // Budget/value extracted from document
+  autoExtractedLocation String? // Location extracted from document
+  autoExtractedDeadlines String? // JSON array of deadlines found
+  autoSummary    String?       // Auto-generated summary
+  gapAnalysis    String?       // Gap analysis vs company capabilities
+  
+  // Calculated capabilities
+  capabilityScore Int?         @default(0) // 0-100 overall capability score
+  matchedRequirements Int?     @default(0) // Number of requirements matched
+  totalRequirements Int?       @default(0) // Total number of requirements
+  strengths       String?      // JSON array of company strengths
+  weaknesses      String?      // JSON array of identified weaknesses
+  recommendations String?      // JSON array of improvement recommendations
+  
+  // NotebookLM Auto Features
+  autoInsights    String?      // JSON string for auto-generated project insights
+  
+  // External file storage links
+  oneDriveLink   String?       // OneDrive folder URL
+  googleDriveLink String?      // Google Drive folder URL
+  externalLinks  ExternalLink[] // Other external links
+  
+  // Project tracking
+  priority       String?       // high, medium, low
+  tags           String?       // comma-separated tags
+  notes          String?       // internal notes
+
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organizationId String
+  owner          User?         @relation("OwnerProjects", fields: [ownerId], references: [id])
+  ownerId        String?
+
+  stages         Stage[]
+  documents      Document[]
+  insights       Insight[]
+  messages       Message[]
+  teamMembers    TeamMember[]  // Assigned team members
+  proposals      Proposal[]    // Generated proposals
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }
@@ -108,8 +176,10 @@ model Stage {
   order     Int
   dueDate   DateTime?
   status    StageStatus @default(PENDING)
-  tender    Tender   @relation(fields: [tenderId], references: [id])
-  tenderId  String
+  project    Project?   @relation(fields: [projectId], references: [id])
+  projectId  String?
+  tender    Tender?   @relation(fields: [tenderId], references: [id])
+  tenderId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -128,8 +198,10 @@ model Document {
   documentType    String?  // e.g., "Company Registration", "ISO Certificate", "Tender RFQ"
   summary         String?  // Auto-generated summary
   extractedData   String?  // JSON of extracted metadata
-  tender          Tender   @relation(fields: [tenderId], references: [id])
-  tenderId        String
+  project          Project?   @relation(fields: [projectId], references: [id])
+  projectId        String?
+  tender          Tender?   @relation(fields: [tenderId], references: [id])
+  tenderId        String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
@@ -147,8 +219,10 @@ model Insight {
   content   String
   citation  String?
   metadata  Json?    // Additional metadata for complex insights like document comparisons
-  tender    Tender   @relation(fields: [tenderId], references: [id])
-  tenderId  String
+  project    Project?   @relation(fields: [projectId], references: [id])
+  projectId  String?
+  tender    Tender?   @relation(fields: [tenderId], references: [id])
+  tenderId  String?
   createdAt DateTime @default(now())
 }
 
@@ -156,8 +230,10 @@ model Message {
   id        String   @id @default(cuid())
   role      String   // user/assistant/system
   content   String
-  tender    Tender   @relation(fields: [tenderId], references: [id])
-  tenderId  String
+  project    Project?   @relation(fields: [projectId], references: [id])
+  projectId  String?
+  tender    Tender?   @relation(fields: [tenderId], references: [id])
+  tenderId  String?
   createdAt DateTime @default(now())
 }
 
@@ -166,12 +242,15 @@ model TeamMember {
   role      String   // Project Manager, Bid Writer, Technical Lead, Reviewer, etc.
   user      User     @relation(fields: [userId], references: [id])
   userId    String
-  tender    Tender   @relation(fields: [tenderId], references: [id])
-  tenderId  String
+  project    Project?   @relation(fields: [projectId], references: [id])
+  projectId  String?
+  tender    Tender?   @relation(fields: [tenderId], references: [id])
+  tenderId  String?
   assignedAt DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([userId, projectId]) // A user can only be assigned once per project
   @@unique([userId, tenderId]) // A user can only be assigned once per tender
 }
 
@@ -181,10 +260,22 @@ model ExternalLink {
   url         String   // Full URL to external resource
   type        String   // onedrive, google_drive, sharepoint, dropbox, custom
   description String?  // Optional description
-  tender      Tender   @relation(fields: [tenderId], references: [id])
-  tenderId    String
+  project    Project?   @relation(fields: [projectId], references: [id])
+  projectId  String?
+  tender    Tender?   @relation(fields: [tenderId], references: [id])
+  tenderId  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+enum ProjectStatus {
+  DRAFT
+  QUALIFICATION
+  PROPOSAL
+  NEGOTIATION
+  SUBMITTED
+  AWARDED
+  LOST
 }
 
 enum TenderStatus {
@@ -266,11 +357,14 @@ model Proposal {
   title       String
   version     String   @default("1.0")
   content     Json     // Array of proposal sections
+  projectId    String?
+  project      Project?  @relation(fields: [projectId], references: [id])
   tenderId    String?
   tender      Tender?  @relation(fields: [tenderId], references: [id])
   metadata    Json?    // Additional metadata like lastModified, createdAt
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([projectId])
   @@index([tenderId])
 }

@@ -1,7 +1,7 @@
 {
-  "name": "syntara-tenders-ai-desktop",
+  "name": "handson-ai-desktop",
   "version": "1.0.0",
-  "description": "Syntara Tenders AI - Professional Tender Management",
+  "description": "Handson-AI - Professional Tender Management",
   "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
@@ -13,8 +13,8 @@
     "preelectron-pack": "npm run build"
   },
   "build": {
-    "appId": "com.syntara.tenders-ai",
-    "productName": "Syntara Tenders AI",
+    "appId": "com.handson.ai",
+    "productName": "Handson-AI",
     "directories": {
       "output": "dist"
     },

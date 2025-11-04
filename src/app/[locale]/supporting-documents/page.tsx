@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Plus, FileCheck, Upload, Trash2, Brain, Download, Search, Filter, Eye, Calendar, FileText, AlertCircle, CheckCircle, Clock } from "lucide-react";
 
 type Document = {
@@ -20,7 +20,7 @@ export default function SupportingDocumentsPage() {
   const [filterType, setFilterType] = useState("all");
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const inputRef = useState<HTMLInputElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -46,7 +46,8 @@ export default function SupportingDocumentsPage() {
       form.append("files", f);
     }
     form.append("tenderId", "global_documents");
-    
+    form.append("category", "supporting"); // FIX: Added category
+
     try {
       const response = await fetch("/api/upload", { method: "POST", body: form });
       const data = await response.json();
@@ -70,11 +71,16 @@ export default function SupportingDocumentsPage() {
     if (!confirm("Are you sure you want to delete this document?")) return;
     
     try {
-      await fetch(`/api/documents/${docId}`, { method: "DELETE" });
+      const response = await fetch(`/api/documents/${docId}`, { method: "DELETE" });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to delete");
+      }
       showNotification("Document deleted successfully", "success");
       await fetchDocuments();
     } catch (error) {
-      showNotification("Failed to delete document", "error");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      showNotification(`Failed to delete document: ${errorMessage}`, "error");
       console.error("Failed to delete document:", error);
     }
   };
@@ -151,7 +157,7 @@ export default function SupportingDocumentsPage() {
   // Filter documents based on search and filter
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doc.documentType?.toLowerCase().includes(searchTerm.toLowerCase());
+                         (doc.documentType || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === "all" || doc.documentType === filterType;
     return matchesSearch && matchesFilter;
   });

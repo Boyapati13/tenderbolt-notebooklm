@@ -21,10 +21,10 @@ type DiscoveryLink = {
 };
 
 type DiscoverySectionProps = {
-  tenderId?: string;
+  projectId?: string;
 };
 
-export function DiscoverySection({ tenderId }: DiscoverySectionProps) {
+export function DiscoverySection({ projectId }: DiscoverySectionProps) {
   const [links, setLinks] = useState<DiscoveryLink[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingLink, setEditingLink] = useState<string | null>(null);
@@ -41,11 +41,11 @@ export function DiscoverySection({ tenderId }: DiscoverySectionProps) {
 
   useEffect(() => {
     fetchLinks();
-  }, [tenderId]);
+  }, [projectId]);
 
   const fetchLinks = async () => {
     try {
-      const response = await fetch(`/api/discovery-links?tenderId=${tenderId || 'global'}`);
+      const response = await fetch(`/api/discovery-links?projectId=${projectId || 'global'}`);
       const data = await response.json();
       setLinks(data.links || []);
     } catch (error) {
@@ -61,7 +61,7 @@ export function DiscoverySection({ tenderId }: DiscoverySectionProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tenderId: tenderId || 'global',
+          projectId: projectId || 'global',
           ...newLink,
           tags: newLink.tags.split(',').map(t => t.trim()).filter(Boolean)
         })
